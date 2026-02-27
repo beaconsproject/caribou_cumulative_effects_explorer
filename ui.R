@@ -1,0 +1,243 @@
+ui = dashboardPage(skin="black",
+                   title = "Caribou Cumulative Effect Disturbance Explorer",
+                   dashboardHeader(title = tags$div(
+                     tags$img(
+                       src = "logoblanc.png",  # Replace with your logo file name
+                       height = "50px",   # Adjust the height of the logo
+                       style = "margin-right: 10px;"  # Add some spacing around the logo
+                     ), "Caribou Cumulative Effect Disturbance Explorer" ), titleWidth = 600,
+                    
+                     # Add Reload Button Next to Sidebar Toggle
+                     tags$li(
+                       class = "dropdown",
+                       actionButton(
+                         "reload_btn",
+                         label = "Reload",
+                         icon = icon("refresh"),
+                         style = "color: black; background-color: orange; border: none; font-size: 16px;"
+                       ),
+                       style = "position: absolute; left: 50px; top: 10px;"  # Adjust margin for placement next to the toggle
+                     ),
+                     tags$li(
+                       class = "dropdown",  # Required for dropdown functionality
+                       dropdownMenu(
+                         type = "tasks", 
+                         badgeStatus = NULL,
+                         icon = icon("life-ring"),  # Life-ring icon triggering dropdown
+                         headerText = "",  # No header text in dropdown
+                         menuItem("Website", href = "https://beaconsproject.ualberta.ca/", icon = icon("globe")),
+                         menuItem("GitHub", href = "https://github.com/beaconsproject/disturbance_explorer", icon = icon("github")),
+                         menuItem("Contact us at beacons@ualberta.ca", href = "mailto: beacons@ualberta.ca", icon = icon("address-book"))
+                       ),
+                       # Plain Text "About Us" Positioned Next to Dropdown
+                       tags$span(
+                         "About Us", 
+                         style = "font-size: 16px; position: relative; top: 15px; right: 10px; white-space: nowrap; color: white;"
+                       )
+                     )
+                   ),
+                   
+                   dashboardSidebar(
+                     width = 325,
+                     sidebarMenu(id="tabs",
+                                 menuItem("Welcome", tabName = "overview", icon = icon("th")),
+                                 menuItem("Select caribou herd", tabName = "select", icon = icon("arrow-pointer")),
+                                 menuItem("Add display elements (OPTIONAL)", tabName = "addLayers", icon = icon(name = "fas fa-plus", lib = "font-awesome")),                
+                                 menuItem("Buffer features", tabName = "buffer", icon = icon("arrow-pointer")),
+                                 menuItem("Download data", tabName = "download", icon = icon("th")),
+                                 hr()
+                     ),
+                     conditionalPanel(
+                       condition="input.tabs=='select'",
+                       selectInput("selectInput", label= div(style = "font-size:13px","Select caribou herd"), choices=c("Please select", caribou_list), selected="Please select"),
+                       uiOutput("saLayerUI"),
+                       br(),
+                       actionButton("distType", "Confirm herd", class = "btn-warning", style='color: #000'),
+                       #div(style = "margin-top: -20px;", selectInput("saLayer", "Select range / corridor", choices = NULL,  multiple = FALSE)),
+                       hr(),
+                       div(style = "margin-top: -10px;", checkboxInput("createMatrix", label = "Define classification per disturbance type", value = F)),
+                       conditionalPanel(
+                           condition="input.createMatrix==true",
+                           div(
+                             style = "margin-left: 10px; margin-top: 30px;",
+                             h5(strong("Classify Disturbance Layer"))
+                           ),
+                           div(
+                             style = "margin-left: 10px;",
+                             h5("Select linear disturbance attributes that describe:")
+                           ),
+                           uiOutput("lineIndustryUI"),
+                           uiOutput("lineDistTypeUI"),
+                           div(
+                             style = "margin-left: 10px;",
+                             h5("Select areal distrubance attributes that describe:")
+                           ),
+                           uiOutput("polyIndustryUI"),
+                           uiOutput("polyDistTypeUI")
+                        ),
+                       br(),
+                       fileInput(inputId = "upload_lineothers", label = "Upload other linear disturbances (shp):", multiple = TRUE, accept = c(".shp", ".shx", ".dbf", ".prj", ".cpg")),
+                       fileInput(inputId = "upload_polyothers", label = "Upload other areal disturbances (shp):", multiple = TRUE, accept = c(".shp", ".shx", ".dbf", ".prj", ".cpg")),
+                       actionButton("confUpload", "Confirm upload", class = "btn-warning", style='color: #000'),
+                     ),
+                     # EXTRA LAYERS
+                     conditionalPanel(
+                       condition="input.tabs=='addLayers'",
+                       radioButtons("extraupload", "Select source for vector layers to be displayed:",
+                                    choices = list("Shapefile" = "extrashp", 
+                                                   "GeoPackage" = "extragpkg"),
+                                    selected = character(0), 
+                                    inline = TRUE),
+                       conditionalPanel(
+                         condition = "input.tabs=='addLayers' && input.extraupload == 'extrashp'",
+                         div(style = "margin-top: -10px;",fileInput(inputId = "display1",   label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#663300; margin-right:8px; border:1px solid #000;"></span>Select layer 1'),
+                                                                    multiple = TRUE, accept = c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'), placeholder = "Select a ShapeFile")),
+                         div(style = "margin-top: -30px;",fileInput(inputId = "display2", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#330066; margin-right:8px; border:1px solid #000;"></span>Select layer 2'),
+                                                                    multiple = TRUE, accept = c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'), placeholder = "Select a ShapeFile")),
+                         div(style = "margin-top: -30px;",fileInput(inputId = "display3", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#003333; margin-right:8px; border:1px solid #000;"></span>Select layer 3'),
+                                                                    multiple = TRUE, accept = c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'), placeholder = "Select a ShapeFile"))
+                       ),
+                       conditionalPanel(
+                         condition = "input.tabs=='addLayers' && input.extraupload == 'extragpkg'",
+                         fileInput(inputId = "display4", label = HTML("<h5><b>OPTIONAL - </b>Upload a GeoPackage that contains layers to be displayed on the map.</h5>"),
+                                   multiple = FALSE, accept = ".gpkg", placeholder = "Select a GeoPackage"),
+                         div(style = "margin-top: -10px;", selectInput("display4a", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#663300; margin-right:8px; border:1px solid #000;"></span>Layer 1'), choices = NULL)),
+                         div(style = "margin-top: -20px;", selectInput("display4b", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#330066; margin-right:8px; border:1px solid #000;"></span>Layer 2'), choices = NULL)),
+                         div(style = "margin-top: -20px;", selectInput("display4c", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#003333; margin-right:8px; border:1px solid #000;"></span>Layer 3'), choices = NULL))
+                       ),
+                       hr(),
+                       div(style = "margin-left: 15px; margin-top: 30px; font-size:14px; font-weight: bold;",HTML("Select source for raster layers to be displayed:")),
+                       br(),
+                       div(style = "margin-top: -10px;",fileInput(inputId = "rast1",   label = HTML('<span style="', gradient_rast1,'"></span>Raster 1'),
+                                                                  multiple = FALSE, accept = c(".tif",".tiff"), placeholder = "Select a raster")),
+                       div(style = "margin-top: -30px;",fileInput(inputId = "rast2", label = HTML('<span style="', gradient_rast2, '"></span>Raster 2'),
+                                                                  multiple = FALSE, accept = c(".tif",".tiff"), placeholder = "Select a raster"))
+                     ),
+                     conditionalPanel(
+                       condition = "input.tabs == 'addLayers'",
+                       br(),
+                       hr(),
+                       br(),
+                       actionButton("confExtra", "Confirm", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px")
+                     ),
+                     conditionalPanel(
+                       condition = "input.tabs == 'buffer'",
+                       radioButtons("selectBuffer", "Select buffer type:",
+                                    choices = list("Use custom buffers" = "custom_buffers", 
+                                                   "Use overall buffers" = "slider_buffers"),
+                                    selected = "slider_buffers", 
+                                    inline = FALSE),
+                       conditionalPanel(
+                         condition="input.selectBuffer=='slider_buffers'",
+                         sliderInput("buffer1", label="Set linear buffer size (m):", min=0, max=2000, value = 500, step=50, ticks=FALSE),
+                         sliderInput("buffer2", label="Set areal buffer size (m):", min=0, max=2000, value = 500, step=50, ticks=FALSE)
+                       ),
+                       hr(),
+                       sliderInput("area1", label="Set minimum undisturbed patch size (km2):", min=0, max=2000, value = 0, step=10, ticks=FALSE),
+                       checkboxInput("includeOthers", "Include other disturbances", value=FALSE),
+                       conditionalPanel(
+                         condition="input.includeOthers",
+                         sliderInput("otherlinesize", label="Set buffer size (m) on other linear disturbances:", min=0, max=2000, value = 500, step=50, ticks=FALSE),
+                         sliderInput("otherpolysize", label="Set a buffer size (m)on other areal disturbances:", min=0, max=2000, value = 500, step=50, ticks=FALSE)
+                         
+                       ),
+                       checkboxInput("forceclaims", "Include mining claims", value=FALSE),
+                       conditionalPanel(
+                         condition="input.forceclaims",
+                         sliderInput("minesize", label="Set mining claims buffer size (m):", min=0, max=2000, value = 500, step=50, ticks=FALSE)
+                       ),
+                       checkboxInput("forcefire", "Include fires", value=FALSE),
+                       conditionalPanel(
+                         condition="input.forcefire",
+                         sliderInput("firesize", label="Set minimum fire size (ha):", min=0, max=2000, value = 0, step=50, ticks=FALSE),
+                         sliderInput("fireyear", label="Set range of years to include:", min=1900, max=2024, value = c(1960, 2023), sep = "")
+                       ),
+                       actionButton("goButton", "Generate undisturbed areas", class = "btn-warning", style='color: #000')
+                     ),
+                     conditionalPanel(
+                       condition="input.tabs=='download'",
+                       div(style="position:relative; left:calc(6%);", downloadButton("downloadData", "Download data", style='color: #000'))
+                     )
+                   ),
+                   dashboardBody(
+                     useShinyjs(),
+                    # Link to custom CSS for the orange theme
+                     tags$head(tags$link(rel = "icon", type = "image/png", href = "logoblanc.png"),
+                               tags$link(rel = "stylesheet", type = "text/css", href = "green-theme.css")),
+                     tabItems(
+                       tabItem(tabName = "overview",
+                               fluidRow(
+                                 column(width = 8,  # Adjusted from 6 to 8 for better alignment
+                                        tabBox(id = "landing", width = 12,
+                                               tabPanel("Overview", includeMarkdown("docs/overview.md")),
+                                               tabPanel("User Guide", includeMarkdown("docs/user_guide.md")),
+                                               tabPanel("Dataset Requirements", includeMarkdown("docs/datasets.md"))
+                                        )
+                                 ),
+                                 absolutePanel(
+                                   right = 0, top = 0, width = 250, height = "100%",
+                                   style = "background-color: white; padding: 0;margin: 0;border: none; right: 0;overflow: hidden;z-index: 1000;",
+                                   tags$img(src = "intact.jpg",width = "100%", style = "display: block;")
+                                 )
+                               )
+                       ),
+                       tabItem(tabName="select",
+                               fluidRow(
+                                 tabBox(id = "one", width="8",
+                                        tabPanel("Mapview", leafletOutput("map1", height=900) %>% withSpinner()),
+                                        tabPanel("Custom buffers",
+                                                 tags$h4("Define linear buffer sizes:"),
+                                                 uiOutput("linear_matrix_ui"),
+                                                 tags$h4("Define areal buffer sizes:"),
+                                                 uiOutput("areal_matrix_ui")
+                                        ),
+                                        tabPanel("User Guide",
+                                                 # Dynamically update the content of Guidance based on selected tab
+                                                 conditionalPanel(
+                                                   condition = "input.tabs == 'select'",
+                                                   includeMarkdown("./docs/select_doc.md")
+                                                 ),
+                                                 conditionalPanel(
+                                                   condition = "input.tabs == 'addLayers'",
+                                                   includeMarkdown("./docs/addLayers_doc.md")
+                                                 ),
+                                                 conditionalPanel(
+                                                   condition = "input.tabs == 'buffer'",
+                                                   includeMarkdown("./docs/buffer_doc.md")
+                                                 ),
+                                                 conditionalPanel(
+                                                   condition = "input.tabs == 'download'",
+                                                   includeMarkdown("./docs/dwd_doc.md")
+                                                 )
+                                        ),
+                                        tabPanel("Summary statistics",
+                                                 tags$h4("Summary statistics"),
+                                                 div(
+                                                   style = "overflow-x: auto; white-space: nowrap; font-size: 12px;",
+                                                   tableOutput("stat_tab")
+                                                  ),
+                                                  div(style = "display: flex; justify-content: center; margin-top: 10px;",
+                                                      downloadButton("downloadStats", "Download statistics table", style='color: #000')
+                                                  ),
+                                                  uiOutput("stats_ui"),
+                                        )
+                                 ),
+                                 tabBox(
+                                   id = "two", width="4",
+                                   tabPanel("Statistics",                             
+                                     
+                                   tagList(# tab content
+                                     tableOutput("tab1"),
+                                     hidden(actionButton("save_stats", "Add statistics to summary statistics", icon = icon("plus"), 
+                                                  class = "btn-xs", style = "font-size: 14px; margin-left: 8px;"))
+                                     ),
+                                     br(),
+                                     uiOutput("acronym_definitions")
+                                   
+                                   )
+                                 )
+                               )
+                       )
+                     )
+                   )
+)
