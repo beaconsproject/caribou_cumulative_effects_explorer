@@ -1,8 +1,8 @@
-# Disturbance Explorer
+# Caribou_CE_Disturbance_Explorer
+*** To be reviewed ***
+February 26, 2026
 
-April 24, 2025
-
-The Disturbance Explorer is an R shiny app that enables users to generate human footprint or landscape intactness maps using regional-scale anthropogenic surface disturbance data. The app includes the following functionality:
+The Caribou_CE_Disturbance_Explorer is an R shiny app that enables users to evaluate disturbance cumulative effect in caribou ranges and corridors. The app allow to generate human footprint or landscape intactness maps using regional-scale anthropogenic surface disturbance data at the caribou range/corridor. The app includes the following functionality:
 
 -   Upload anthropogenic disturbances (linear and areal) and an area of interest (AOI) as a geopackage
 -   Calculate the regional human footprint (or landscape intactness) applying user-defined buffers of influence around linear or areal disturbances
