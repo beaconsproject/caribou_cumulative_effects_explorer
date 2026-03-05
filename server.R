@@ -122,7 +122,7 @@ server = function(input, output, session) {
   ################################################################################################
   output$polygonSelectUI <- renderUI({
     req(input$selectInput == "Little Rancheria")
-    req(input$saLayer)
+    req(input$saLayer != "Annual range")
     
     layer <- sf::st_read(herd(), layer = input$saLayer, quiet = TRUE)
     
@@ -495,6 +495,7 @@ server = function(input, output, session) {
         
         purrr::walk2(infile$datapath, outfiles, ~file.rename(.x, .y))
         layer <- sf::st_read(file.path(dir,paste0(name, ".shp")), quiet = TRUE) %>% 
+          dplyr::select(-any_of("fid")) %>%
           st_intersection(studyarea())
         
         # Handle cases where 'geometry' might not be named correctly
@@ -535,6 +536,7 @@ server = function(input, output, session) {
         
         purrr::walk2(infile$datapath, outfiles, ~file.rename(.x, .y))
         layer <- sf::st_read(file.path(dir,paste0(name, ".shp")), quiet = TRUE) %>% 
+          dplyr::select(-any_of("fid")) %>%
           st_intersection(studyarea())
         
         # Handle cases where 'geometry' might not be named correctly
@@ -1762,45 +1764,47 @@ server = function(input, output, session) {
     filename = function() { paste("disturbance_explorer-", Sys.Date(), ".gpkg", sep="") },
     content = function(file) {
       
-        x <- data.frame(Area_km2 = aoiAttributes()[1,2],
-                        Lineardist_km  = baseAttributes()[1,2],
-                        Arealdist_km2 = baseAttributes()[2,2],
-                        otherLinear_km  = baseAttributes()[3,2],
-                        otherAreal_km2  = baseAttributes()[4,2],
-                        Fires_per = baseAttributes()[5,2],
-                        Mine_per = baseAttributes()[6,2],
-                        PA2021_per= baseAttributes()[7,2],
-                        IntactFL2000_per = baseAttributes()[8,2],
-                        IntactFL2020_per = baseAttributes()[9,2])
-        colnames(x) <-c("Area_km2","Lineardist_km","Arealdist_km2","otherLinear_km","otherAreal_km2","Fires_per", "Mines_per", "PA2021_per","IntactFL2000_per","IntactFL2020_per")
-        aoi <- cbind(st_union(studyarea()), x)
-        if (!is.null(layers_rv$line)) st_write(layers_rv$line, dsn=file, layer='linear_disturbance', append=TRUE)
-        if (!is.null(layers_rv$poly)) st_write(layers_rv$poly, dsn=file, layer='areal_disturbance', append=TRUE)
-        if (!is.null(fires())) st_write(fires(), dsn=file, layer='fires', append=TRUE)
-        if (!is.null(other_linedist())) st_write(other_linedist(), dsn=file, layer='other_linear_disturbances', append=TRUE)
-        if (!is.null(other_polydist())) st_write(other_polydist(), dsn=file, layer='other_areal_disturbances', append=TRUE)
-        if (!is.null(layers_rv$pa2021)) st_write(layers_rv$pa2021, dsn=file, layer='protected_areas', append=TRUE)
-        if (!is.null(layers_rv$placers)) st_write(layers_rv$placers, dsn=file, layer='Placer_Claims', append=TRUE)
-        if (!is.null(layers_rv$quartz)) st_write(layers_rv$quartz, dsn=file, layer='Quartz_Claims', append=TRUE)
-        if (!is.null(layers_rv$mines)) st_write(layers_rv$mines, dsn=file, layer='mining_claims', append=TRUE)
-        if (!is.null(layers_rv$herds)) st_write(layers_rv$herds, dsn=file, layer='Caribou_Herds', append=TRUE)
-        if (!is.null(display1_sf())) st_write(display1_sf(), dsn=file, layer=display1_name(), append=TRUE)
-        if (!is.null(display2_sf())) st_write(display2_sf(), dsn=file, layer=display2_name(), append=TRUE)
-        if (!is.null(display3_sf())) st_write(display3_sf(), dsn=file, layer=display3_name(), append=TRUE)
-
-        if (input$goButton) {
-          x <- data.frame(Undisturbed_per = additionalAttributes()[1,2],
-                          Disturbed_per  = additionalAttributes()[2,2])
-          colnames(x) <-c("Undisturbed_per", "Disturbed_per")
-          aoi <- cbind(aoi, x)
-          st_write(aoi, dsn=file, layer='studyarea', append=FALSE)
-          st_write(intactness_sf(), dsn=file, layer='undisturbed', append=TRUE)
-          if (!is.null(footprintfire_sf())){
-            st_write(footprintfire_sf(), dsn=file, layer='disturbed', append=TRUE)
-          } else{
-            st_write(footprint_sf(), dsn=file, layer='disturbed', append=TRUE)
-          }
+      x <- data.frame(Area_km2 = aoiAttributes()[1,2],
+                      Lineardist_km  = baseAttributes()[1,2],
+                      Arealdist_km2 = baseAttributes()[2,2],
+                      otherLinear_km  = baseAttributes()[3,2],
+                      otherAreal_km2  = baseAttributes()[4,2],
+                      Fires_per = baseAttributes()[5,2],
+                      Mine_per = baseAttributes()[6,2],
+                      PA2021_per= baseAttributes()[7,2],
+                      IntactFL2000_per = baseAttributes()[8,2],
+                      IntactFL2020_per = baseAttributes()[9,2])
+      colnames(x) <-c("Area_km2","Lineardist_km","Arealdist_km2","otherLinear_km","otherAreal_km2","Fires_per", "Mines_per", "PA2021_per","IntactFL2000_per","IntactFL2020_per")
+      aoi <- cbind(st_union(studyarea()), x)
+      if (!is.null(layers_rv$line)) st_write(layers_rv$line, dsn=file, layer='linear_disturbance', append=TRUE)
+      if (!is.null(layers_rv$poly)) st_write(layers_rv$poly, dsn=file, layer='areal_disturbance', append=TRUE)
+      if (!is.null(fires())) st_write(fires(), dsn=file, layer='fires', append=TRUE)
+      if (!is.null(other_linedist())) st_write(other_linedist(), dsn=file, layer='other_linear_disturbances', append=TRUE)
+      if (!is.null(other_polydist())) st_write(other_polydist(), dsn=file, layer='other_areal_disturbances', append=TRUE)
+      if (!is.null(layers_rv$pa2021)) st_write(layers_rv$pa2021, dsn=file, layer='protected_areas', append=TRUE)
+      if (!is.null(layers_rv$placers)) st_write(layers_rv$placers, dsn=file, layer='Placer_Claims', append=TRUE)
+      if (!is.null(layers_rv$quartz)) st_write(layers_rv$quartz, dsn=file, layer='Quartz_Claims', append=TRUE)
+      if (!is.null(layers_rv$mines)) st_write(layers_rv$mines, dsn=file, layer='mining_claims', append=TRUE)
+      if (!is.null(layers_rv$herds)) st_write(layers_rv$herds, dsn=file, layer='Caribou_Herds', append=TRUE)
+      if (!is.null(display1_sf())) st_write(display1_sf(), dsn=file, layer=display1_name(), append=TRUE)
+      if (!is.null(display2_sf())) st_write(display2_sf(), dsn=file, layer=display2_name(), append=TRUE)
+      if (!is.null(display3_sf())) st_write(display3_sf(), dsn=file, layer=display3_name(), append=TRUE)
+      
+      if (input$goButton) {
+        x <- data.frame(Undisturbed_per = additionalAttributes()[1,2],
+                        Disturbed_per  = additionalAttributes()[2,2])
+        colnames(x) <-c("Undisturbed_per", "Disturbed_per")
+        aoi <- cbind(aoi, x)
+        st_write(aoi, dsn=file, layer='studyarea', append=FALSE)
+        st_write(intactness_sf(), dsn=file, layer='undisturbed', append=TRUE)
+        if (!is.null(footprintfire_sf())){
+          st_write(footprintfire_sf(), dsn=file, layer='disturbed', append=TRUE)
+        } else{
+          st_write(footprint_sf(), dsn=file, layer='disturbed', append=TRUE)
         }
+      }
+       
+        
     }
   )
   
