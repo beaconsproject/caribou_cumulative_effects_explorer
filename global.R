@@ -5,11 +5,6 @@ required_packages <- c("leaflet", "tidyverse", "cli","shinydashboard", "shinycss
    "markdown", "dplyr", "tidyr", "sf", "shinyMatrix"
 )
 
-caribou_list <- c("Little Rancheria", "Finnlayson")
-
-rge_list <- c("fall_high_use_areas", "fall_main_corridor", "kde_annual","kde_latewinter","kde_earlywinter","kde_fallrut", "kde_summer", "spring_high_use_areas", "spring_main_corridor")
-
-
 options(shiny.maxRequestSize=500*1024^2) 
 
 # Install any missing packages
@@ -34,6 +29,19 @@ library(tidyr)
 library(sf)
 library(shinyMatrix)
 library(utils)
+
+
+caribouherds <- st_read("www/CaribouHerds.shp") %>% st_transform(4326)
+caribou_list <- c("Little Rancheria", "Coal River", "Finlayson", "Horseranch", "Labiche", "Pelly", "Redstone", "South Nahanni", "Tay River", "Wolf Lake")
+
+rge_list <- c("fall_high_use_areas", "fall_main_corridor", "kde_annual","kde_winter","kde_latewinter","kde_earlywinter","kde_fallrut", "kde_summer", "kde_latesummer", "kde_earlysummer","spring_high_use_areas", "spring_main_corridor")
+
+# LFN bnd
+IPCA_PL <- st_read("www/lfn_boundaries.gpkg", layer = "ipca_planning_area") %>% 
+  st_zm(drop = TRUE, what = "ZM") %>% 
+  st_transform(4326)
+kdtt <- st_read("www/lfn_boundaries.gpkg", layer = "kdtt") %>% st_transform(4326)
+proposed_ipcas <- st_read("www/lfn_boundaries.gpkg", layer = "proposed_ipcas") %>% st_transform(4326)
 
 isMappable <- function(x) {
   !is.null(x) && inherits(x, "sf") && nrow(x) > 0
