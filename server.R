@@ -69,11 +69,27 @@ server = function(input, output, session) {
   # Observe on layers names in gpkg
   lyr_names <- reactive({
     file <- NULL
-    
+
     if (input$selectInput == 'Little Rancheria') {
       file <- 'www/littlerancheria.gpkg'
-    } else if (input$selectInput == 'Finnlayson') {
-      file <- 'www/finnlayson.gpkg'
+    } else if (input$selectInput == 'Finlayson') {
+      file <- 'www/finlayson.gpkg'
+    } else if (input$selectInput == 'Coal River') {
+      file <- 'www/coalriver.gpkg'
+    } else if (input$selectInput == 'Horseranch') {
+      file <- 'www/horseranch.gpkg'
+    } else if (input$selectInput == 'Labiche') {
+      file <- 'www/labiche.gpkg'
+    } else if (input$selectInput == 'Pelly') {
+      file <- 'www/pelly.gpkg'
+    } else if (input$selectInput == 'Redstone') {
+      file <- 'www/redstone.gpkg'
+    } else if (input$selectInput == 'South Nahanni') {
+      file <- 'www/southnahanni.gpkg'
+    } else if (input$selectInput == 'Tay River') {
+      file <- 'www/tayriver.gpkg'
+    } else if (input$selectInput == 'Wolf Lake') {
+      file <- 'www/wolflake.gpkg'
     } else {
       return(NULL)
     }
@@ -85,20 +101,37 @@ server = function(input, output, session) {
   })
   
   ################################################################################################
-  # Render UI for the selection of column name for disturbances 
+  # Render UI for range or corridor selection
   ################################################################################################
   output$saLayerUI <- renderUI({
-    req(input$selectInput != "Please select")
+    req(herd())
     
+    layer <- sf::st_layers(herd())
+    la <- layer$name[layer$name %in% rge_list]
     if(input$selectInput == "Little Rancheria"){
-      div(style = "margin-top: -30px;",  selectInput("saLayer", label = div(style = "font-size:13px;margin-top: -10px;", ""), 
-                    choices = rge_list, selected = "kde_annual"))
+      div(style = "margin-top: -30px;",  selectInput("saLayer", label = div(style = "font-size:13px;margin-top: -10px;", "Select range/corridor"), 
+                    choices = la, selected = "kde_annual"))
     } else{
       div(style = "margin-top: -30px;",  selectInput("saLayer", label = div(style = "font-size:13px;margin-top: -10px;", ""), 
                                                      choices = "Annual range"))
     }
   })
-  
+
+  ################################################################################################
+  # Render UI for level selection
+  ################################################################################################
+  output$polygonSelectUI <- renderUI({
+    req(input$selectInput == "Little Rancheria")
+    req(input$saLayer)
+    
+    layer <- sf::st_read(herd(), layer = input$saLayer, quiet = TRUE)
+    
+    # get unique levels
+    lvls <- unique(layer$level)
+    if(length(lvls) > 1){
+      selectInput("polygonLevel", "Select level", choices = lvls)
+    }
+  })
   ################################################################################################
   # Observe on Others disturbances 
   observe({
@@ -113,13 +146,18 @@ server = function(input, output, session) {
   })
   
   observe({
-    req(!is.null(lyr_names()))
-    if(any(c("linear_disturbance","areal_disturbance") %in% lyr_names())){
-      enable("createMatrix")
-    } else {
+    if(is.null(lyr_names())){
       disable("createMatrix")
+    }else{
+      req(!is.null(lyr_names())) 
+      if(!is.null(layers_rv$line) || !is.null(layers_rv$poly)){
+        enable("createMatrix")
+      } else {
+        disable("createMatrix")
+      }
     }
   })
+  
   observe({
     disable("otherpolysize")
     req(!is.null(input$upload_polyothers))
@@ -133,7 +171,7 @@ server = function(input, output, session) {
   ################################################################################################
   # Observe on Mining claims
   observe({
-    req(input$selectInput != "Please select")
+    req(herd())
     if (is.null(layers_rv$quartz) && is.null(layers_rv$placers) && is.null(layers_rv$mines)) {
        disable("forceclaims")
      div(
@@ -148,7 +186,7 @@ server = function(input, output, session) {
   ################################################################################################
   # Observe on Fires (checkboxInput and slider)
   observe({
-    req(input$selectInput != "Please select")
+    req(herd())
     if (is.null(layers_rv$fire_sf)){
       disable("forcefire")
       div(
@@ -180,7 +218,7 @@ server = function(input, output, session) {
   ################################################################################################
   # Observe on linear disturbances - disable if missing
   observe({
-    req(input$selectInput != "Please select")
+    req(herd())
     if (!("linear_disturbance") %in% lyr_names()){
       disable("buffer1")
     }else{
@@ -191,7 +229,7 @@ server = function(input, output, session) {
   ################################################################################################
   # Observe on areal disturbances - disable if missing
   observe({
-    req(input$selectInput != "Please select")
+    req(herd())
     if (!("areal_disturbance") %in% lyr_names()){
       disable("buffer2")
     }else{
@@ -201,7 +239,7 @@ server = function(input, output, session) {
   ################################################################################################
   # Observe on linear and areal for custom buffering - disable if both missing
   observe({
-    req(input$selectInput != "Please select")
+    req(herd())
     if (!any(c("linear_disturbance", "areal_disturbance") %in% lyr_names())){
       disable("selectBuffer")
     }else{
@@ -231,21 +269,28 @@ server = function(input, output, session) {
   ##############################################################################
   # Read input data - REQUIRED
   ##############################################################################
-  studyarea <- eventReactive(input$distType, {
-    req(input$selectInput != "Please select")
+  studyarea <- eventReactive(input$confHerd, {
+    req(herd())
     req(input$saLayer)
     
     rge_selected(input$saLayer)
     if (input$selectInput == "Little Rancheria") {
-      st_read(herd(), input$saLayer, quiet = TRUE)
+      layer <- st_read(herd(), input$saLayer, quiet = TRUE)
+      
+      lvls <- unique(layer$level)
+      if(length(lvls) > 1 && !is.null(input$polygonLevel)){
+        layer %>%
+          dplyr::filter(level == input$polygonLevel)
+      } else {
+        layer
+      }
     } else {
       st_read(herd(), "studyarea", quiet = TRUE)
     }
-    
   })
   
-  observeEvent(input$distType,{
-    req(input$selectInput != "Please select",
+  observeEvent(input$confHerd,{
+    req(herd(),
         studyarea())
     
     # show pop-up ...
@@ -272,11 +317,15 @@ server = function(input, output, session) {
       line_sf <- st_read(herd(), "linear_disturbance", quiet = TRUE)
       layers_rv$line <- line_sf
       statslayers_rv$line <- line_sf
+      industry_line("TYPE_INDUSTRY")
+      disttype_line("TYPE_DISTURBANCE")
     }
     if ("areal_disturbance" %in% lyr_names()) {
       poly_sf <- st_read(herd(), "areal_disturbance", quiet = TRUE)
       layers_rv$poly <- poly_sf
       statslayers_rv$poly <- poly_sf
+      industry_poly("TYPE_INDUSTRY")
+      industry_poly("TYPE_DISTURBANCE")
     }
     if ("fires" %in% lyr_names()) {
       fi <-st_read(herd(), 'fires', quiet=T) %>%
@@ -727,155 +776,147 @@ server = function(input, output, session) {
   })
   
   ########################################################
- observeEvent(input$distType, {
+ observeEvent(input$confClassify, {
    if (input$selectInput == "Please select"){
      showModal(modalDialog(
-       title = "Missing type of source dataset",
-       "Before proceeding, please select the source dataset.",
+       title = "Missing herd and range/corridor",
+       "Before proceeding, please select a caribou herd and range/corridor.",
        easyClose = TRUE,
        footer = NULL)
      )
-   } else if (input$selectInput == "Little Rancheria") {
-     if (!is.null(layers_rv$line)) {
-       industry_line("TYPE_INDUSTRY")
-       disttype_line("TYPE_DISTURBANCE")
-     }
-     if (!is.null(layers_rv$poly)) {
-       industry_poly("TYPE_INDUSTRY")
-       disttype_poly("TYPE_DISTURBANCE")
-     }
    }else{
-     req(!is.null(input$upload_gpkg))
-     req(input$createMatrix == TRUE)
-     
+     req(herd())
+
      if (!is.null(layers_rv$line)) {
-       industry_line(input$lineindustry)
-       disttype_line(input$linedisttype)
+       if(input$createMatrix){
+         industry_line(input$lineindustry)
+         disttype_line(input$linedisttype)
+       }
      }
      if (!is.null(layers_rv$poly)) {
-       industry_poly(input$polyindustry)
-       disttype_poly(input$polydisttype)
+       if(input$createMatrix){
+         industry_poly(input$polyindustry)
+         disttype_poly(input$polydisttype)
+       }
      }
    }
   })
   
-  observeEvent(input$distType, {
-    output$linear_matrix_ui <- renderUI({
-        if (is.null(layers_rv$line)) {
-          tags$p("NONE", style = "color: gray; font-style: italic;")
-        } else {
-          # Build matrix
-          
-          #req(industry_line(), disttype_line(), input$buffer1)
-          industry_line <- industry_line()
-          disttype_line <- disttype_line()
-          
-          line_tibble <- layers_rv$line %>%
-            st_drop_geometry() %>%
-            {
-              data <- .
-              industry_col <- if (!is.null(industry_line) && industry_line %in% colnames(data)) data[[industry_line]] else "NONE"
-              dist_col <- if (!is.null(disttype_line) && disttype_line %in% colnames(data)) data[[disttype_line]] else "NONE"
-              
-              data %>%
-                mutate(
-                  TYPE_FEATURE = "Linear",
-                  BUFFER_SIZE_M = input$buffer2,
-                  TYPE_INDUSTRY = industry_col,
-                  TYPE_DISTURBANCE = dist_col
-                )
-            }
-         line_summary <- if (is.null(layers_rv$line)) {
-            tibble(
-              TYPE_INDUSTRY = "NONE",
-              TYPE_DISTURBANCE = "NONE",
-              AREA_KM2 = 0
-            )
-          } else {
-            data <- layers_rv$line
-            data <- data %>%
-              mutate(
-                length_km = st_length(layers_rv$line) / 1000,
-                TYPE_INDUSTRY = if (!is.null(industry_line) && industry_line %in% colnames(data)) data[[industry_line]] else "NONE",
-                TYPE_DISTURBANCE = if (!is.null(disttype_line) && disttype_line %in% colnames(data)) data[[disttype_line]] else "NONE"
-              ) %>%
-              st_drop_geometry() %>%
-              group_by(TYPE_INDUSTRY, TYPE_DISTURBANCE) %>%
-              summarize(LENGTH_KM = as.numeric(round(sum(length_km), 2)))
-          }
-        
-          line_tibble <- line_tibble %>%
-            left_join(line_summary, by = c("TYPE_INDUSTRY", "TYPE_DISTURBANCE"))
-        
-          mline <- unique(line_tibble) %>%
-            dplyr::select(any_of(c("TYPE_FEATURE", "TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M", "LENGTH_KM"))) %>%
-            as.matrix()
-        
-          # Return the matrixInput to UI
-          matrixInput("linear_buffers",
-                      value = mline,
-                      rows = list(names = FALSE, extend = TRUE),
-                      cols = list(names = TRUE))
-        }
-      })
+  output$linear_matrix_ui <- renderUI({
+    if (is.null(layers_rv$line)) {
+      tags$p("NONE", style = "color: gray; font-style: italic;")
+    } else {
+      # Build matrix
       
-      output$areal_matrix_ui <- renderUI({
-        if (is.null(layers_rv$poly)) {
-          tags$p("NONE", style = "color: gray; font-style: italic;")
-        } else {
-          #req(industry_poly, disttype_poly, input$buffer2)
-          industry_poly <- industry_poly()
-          disttype_poly <- disttype_poly()
+      #req(industry_line(), disttype_line(), input$buffer1)
+      industry_line <- industry_line()
+      disttype_line <- disttype_line()
+      
+      line_tibble <- statslayers_rv$line %>%
+        st_drop_geometry() %>%
+        {
+          data <- .
+          industry_col <- if (!is.null(industry_line) && industry_line %in% colnames(data)) data[[industry_line]] else "NONE"
+          dist_col <- if (!is.null(disttype_line) && disttype_line %in% colnames(data)) data[[disttype_line]] else "NONE"
           
-          poly_tibble <- layers_rv$poly %>%
-            st_drop_geometry() %>%
-            {
-              data <- .
-              industry_col <- if (!is.null(industry_poly) && industry_poly %in% colnames(data)) data[[industry_poly]] else "NONE"
-              dist_col <- if (!is.null(disttype_poly) && disttype_poly %in% colnames(data)) data[[disttype_poly]] else "NONE"
-              
-              data %>%
-                mutate(
-                  TYPE_FEATURE = "Areal",
-                  BUFFER_SIZE_M = input$buffer2,
-                  TYPE_INDUSTRY = industry_col,
-                  TYPE_DISTURBANCE = dist_col
-                )
-            }
-          
-          poly_summary <- if (is.null(layers_rv$poly)) {
-            tibble(
-              TYPE_INDUSTRY = "NONE",
-              TYPE_DISTURBANCE = "NONE",
-              AREA_KM2 = 0
+          data %>%
+            mutate(
+              TYPE_FEATURE = "Linear",
+              BUFFER_SIZE_M = input$buffer2,
+              TYPE_INDUSTRY = industry_col,
+              TYPE_DISTURBANCE = dist_col
             )
-          } else {
-            data <- layers_rv$poly
-            data <- data %>%
-              mutate(
-                area_km2 = as.numeric(st_area(data)) / 1e6,
-                TYPE_INDUSTRY = if (!is.null(industry_poly) && industry_poly %in% colnames(data)) data[[industry_poly]] else "NONE",
-                TYPE_DISTURBANCE = if (!is.null(disttype_poly) && disttype_poly %in% colnames(data)) data[[disttype_poly]] else "NONE"
-              ) %>%
-              st_drop_geometry() %>%
-              group_by(TYPE_INDUSTRY, TYPE_DISTURBANCE) %>%
-              summarize(AREA_KM2 = round(sum(area_km2, na.rm = TRUE), 5), .groups = "drop")
-          }
-          
-          poly_tibble <- poly_tibble %>%
-            left_join(poly_summary, by = c("TYPE_INDUSTRY", "TYPE_DISTURBANCE"))
-          
-          mpoly <- unique(poly_tibble) %>%
-            dplyr::select(any_of(c("TYPE_FEATURE", "TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M", "AREA_KM2"))) %>%
-            as.matrix()
-          
-          matrixInput("areal_buffers",
-                      value = mpoly,
-                      rows = list(names = FALSE, extend = TRUE),
-                      cols = list(names = TRUE))
         }
-      })
-  })
+      line_summary <- if (is.null(statslayers_rv$line)) {
+        tibble(
+          TYPE_INDUSTRY = "NONE",
+          TYPE_DISTURBANCE = "NONE",
+          AREA_KM2 = 0
+        )
+      } else {
+        data <- statslayers_rv$line
+        data <- data %>%
+          mutate(
+            length_km = st_length(statslayers_rv$line) / 1000,
+            TYPE_INDUSTRY = if (!is.null(industry_line) && industry_line %in% colnames(data)) data[[industry_line]] else "NONE",
+            TYPE_DISTURBANCE = if (!is.null(disttype_line) && disttype_line %in% colnames(data)) data[[disttype_line]] else "NONE"
+          ) %>%
+          st_drop_geometry() %>%
+          group_by(TYPE_INDUSTRY, TYPE_DISTURBANCE) %>%
+          summarize(LENGTH_KM = as.numeric(round(sum(length_km), 2)))
+      }
+      
+      line_tibble <- line_tibble %>%
+        left_join(line_summary, by = c("TYPE_INDUSTRY", "TYPE_DISTURBANCE"))
+      
+      mline <- unique(line_tibble) %>%
+        dplyr::select(any_of(c("TYPE_FEATURE", "TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M", "LENGTH_KM"))) %>%
+        as.matrix()
+      
+      # Return the matrixInput to UI
+      matrixInput("linear_buffers",
+                  value = mline,
+                  rows = list(names = FALSE, extend = TRUE),
+                  cols = list(names = TRUE))
+    }
+  })  
+      
+  output$areal_matrix_ui <- renderUI({
+    if (is.null(statslayers_rv$poly)) {
+      tags$p("NONE", style = "color: gray; font-style: italic;")
+    } else {
+      #req(industry_poly, disttype_poly, input$buffer2)
+      industry_poly <- industry_poly()
+      disttype_poly <- disttype_poly()
+      
+      poly_tibble <- statslayers_rv$poly %>%
+        st_drop_geometry() %>%
+        {
+          data <- .
+          industry_col <- if (!is.null(industry_poly) && industry_poly %in% colnames(data)) data[[industry_poly]] else "NONE"
+          dist_col <- if (!is.null(disttype_poly) && disttype_poly %in% colnames(data)) data[[disttype_poly]] else "NONE"
+          
+          data %>%
+            mutate(
+              TYPE_FEATURE = "Areal",
+              BUFFER_SIZE_M = input$buffer2,
+              TYPE_INDUSTRY = industry_col,
+              TYPE_DISTURBANCE = dist_col
+            )
+        }
+      
+      poly_summary <- if (is.null(statslayers_rv$poly)) {
+        tibble(
+          TYPE_INDUSTRY = "NONE",
+          TYPE_DISTURBANCE = "NONE",
+          AREA_KM2 = 0
+        )
+      } else {
+        data <- statslayers_rv$poly
+        data <- data %>%
+          mutate(
+            area_km2 = as.numeric(st_area(data)) / 1e6,
+            TYPE_INDUSTRY = if (!is.null(industry_poly) && industry_poly %in% colnames(data)) data[[industry_poly]] else "NONE",
+            TYPE_DISTURBANCE = if (!is.null(disttype_poly) && disttype_poly %in% colnames(data)) data[[disttype_poly]] else "NONE"
+          ) %>%
+          st_drop_geometry() %>%
+          group_by(TYPE_INDUSTRY, TYPE_DISTURBANCE) %>%
+          summarize(AREA_KM2 = round(sum(area_km2, na.rm = TRUE), 5), .groups = "drop")
+      }
+      
+      poly_tibble <- poly_tibble %>%
+        left_join(poly_summary, by = c("TYPE_INDUSTRY", "TYPE_DISTURBANCE"))
+      
+      mpoly <- unique(poly_tibble) %>%
+        dplyr::select(any_of(c("TYPE_FEATURE", "TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M", "AREA_KM2"))) %>%
+        as.matrix()
+      
+      matrixInput("areal_buffers",
+                  value = mpoly,
+                  rows = list(names = FALSE, extend = TRUE),
+                  cols = list(names = TRUE))
+    }
+  })    
   
   ################################################################################################
   # Observe on buffer 
@@ -897,7 +938,7 @@ server = function(input, output, session) {
   ##############################################################################
   footprint_sf <- reactive({
     
-    if(input$distType[1]==0){
+    if(input$confHerd[1]==0){
       showModal(modalDialog(
         title = "Missing source dataset confirmation",
         "Before proceeding, please confirm the source dataset in the Select study area section.",
@@ -906,7 +947,7 @@ server = function(input, output, session) {
       )
     }
     
-    req(input$distType)
+    req(input$confHerd)
     
     if (!is.null(layers_rv$poly) | !is.null(layers_rv$line) | !is.null(fires()) | !is.null(mines_all())  | !is.null(other_linedist()) | !is.null(other_polydist())) {
       if (!is.null(layers_rv$poly) | !is.null(layers_rv$line) ) {
@@ -1096,25 +1137,43 @@ server = function(input, output, session) {
   # View initial set of maps
   ##############################################################################
   output$map1 <- renderLeaflet({
+    map_bounds1 <- IPCA_PL %>% st_bbox() %>% as.character()
+    
+    proposed_pal <- colorFactor(
+      palette = c("purple", "orange", "green"),
+      domain = proposed_ipcas$Name
+    ) 
+    label_points <- st_point_on_surface(proposed_ipcas)
+    label_points$Name <- c("Little Rancheria", "Tu Ball", "Tū Chō")
+    
     leaflet(options = leafletOptions(attributionControl=FALSE)) %>%
-      fitBounds(lng1 = -121, lat1 = 44, lng2 = -65, lat2 = 78) %>%
+      #fitBounds(lng1 = -121, lat1 = 44, lng2 = -65, lat2 = 78) %>%
+      fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
       addMapPane(name = "ground", zIndex=380) %>%
       addMapPane(name = "top", zIndex=420) %>%
       addScaleBar(position = "bottomleft", options = scaleBarOptions(imperial = FALSE)) %>%
       addProviderTiles("Esri.WorldImagery", group="Esri.WorldImagery") %>%
       addProviderTiles("Esri.WorldTopoMap", group="Esri.WorldTopoMap")%>% 
       addTiles(urlTemplate = "", group = "Blank Background") %>%
+      addPolygons(data=IPCA_PL, color='black', fill=F,  opacity = 1, weight=2, group="IPCA planning area", options = leafletOptions(pane = "ground")) %>%
+      addPolygons(data=kdtt, color='red', fill=F, weight=2, group="Kaska Dene Traditional Territory", options = leafletOptions(pane = "ground")) %>%
+      addPolygons(data=proposed_ipcas, color = ~proposed_pal(Name), fillColor = ~proposed_pal(Name), fillOpacity = 0.2, weight=2, group="Proposed IPCAs", options = leafletOptions(pane = "ground")) %>%
+      addLabelOnlyMarkers(data = label_points, label = ~Name, labelOptions = labelOptions(noHide = TRUE, direction = "center", textOnly = TRUE, style = list("font-weight"="bold","font-size"="14px","color"="black")), group = "Proposed IPCAs") %>%
+      addPolygons(data=caribouherds, color='black', fill="grey", fillOpacity = 0.1, weight=3, layerId = caribouherds$HERD, popup = ~HERD, group="Caribou herds", options = leafletOptions(pane = "top")) %>% 
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
+                       overlayGroups = c("Caribou herds", "Proposed IPCAs"),
                    options = layersControlOptions(collapsed = FALSE))
   })
   
-  observeEvent(input$distType,{
-    req(input$distType)
+  observeEvent(input$confHerd,{
+    req(input$confHerd)
     req(studyarea())
   
     leafletProxy("map1") %>% 
       clearGroup(rge_clear()) %>%
+      clearGroup("Caribou herds") %>%
+      clearGroup("Proposed IPCAs") %>%
       clearGroup("Linear disturbances") %>%
       clearGroup("Areal disturbances") %>%
       clearGroup("Other linear disturbances") %>%
@@ -1134,7 +1193,7 @@ server = function(input, output, session) {
     
     leafletProxy("map1") %>%
         fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
-        addPolygons(data=sa, color='black', fill=F, opacity = 1, weight=2, group=rge_selected(), options = leafletOptions(pane = "top")) %>%
+        addPolygons(data=sa, color='#663399', fill=F, opacity = 1, weight=3, group=rge_selected(), options = leafletOptions(pane = "top")) %>%
       
         addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
@@ -1267,13 +1326,23 @@ server = function(input, output, session) {
         )  
     }
   })
+  
   observeEvent(input$confUpload,{ 
+    
+    if (is.null(other_polydist()) && is.null(other_linedist())){
+      showModal(modalDialog(
+        title = "Missing upload of other disturbances",
+        "Please upload other linear or areal disturbances before confirming the upload.",
+        easyClose = TRUE,
+        footer = NULL)
+      )
+    }
     
     leafletProxy("map1") %>% 
       clearGroup("Other linear disturbances") %>%
       clearGroup("Other areal disturbances")
     
-    dist_names_new <- dist_names()
+   dist_names_new <- dist_names()
     
     other_polydist <- isolate(other_polydist())
     if(!is.null(other_polydist)){
@@ -1395,7 +1464,7 @@ server = function(input, output, session) {
     
     shinyjs::show("save_stats")
     
-    if(input$distType[1]==0){
+    if(input$confHerd[1]==0){
       showModal(modalDialog(
         title = "Missing source dataset confirmation",
         "Before proceeding, please confirm the source dataset in the Select study area section.",
@@ -1404,7 +1473,7 @@ server = function(input, output, session) {
       )
     }
     
-    req(input$distType)
+    req(input$confHerd)
     
     if(is.null(input$selectBuffer) && (!is.null(layers_rv$line) || !is.null(layers_rv$poly))){
       showModal(modalDialog(
@@ -1475,16 +1544,16 @@ server = function(input, output, session) {
   ##############################################################################
   # Reactive for the attributes 
   aoiAttributes <- reactive({
-    req(input$selectInput != "Please select")
+    req(herd())
     aoi <- sum(st_area(studyarea()))
 
     tibble(Attribute = "Study area (km2)", Value = as.numeric(round(aoi / 1000000, 0)))
   })
 
   baseAttributes <- reactive({
-    req(input$selectInput != "Please select")
+    req(herd())
     
-    if(input$distType && input$saLayer =="Select a layer"){
+    if(input$confHerd && input$saLayer =="Select a layer"){
       showModal(modalDialog(
         title = "Please select the layer name representing the study area before proceeding.",
         easyClose = TRUE,
@@ -1537,7 +1606,7 @@ server = function(input, output, session) {
     )
   })  
   output$acronym_definitions <- renderUI({
-    req(input$distType)
+    req(input$confHerd)
     tagList(
       tags$div(
         style = "font-size: 0.85em; color: grey;",
@@ -1598,7 +1667,7 @@ server = function(input, output, session) {
   
   # Combine the two sets of attributes
   output$tab1 <- renderTable({
-    req(input$distType)
+    req(input$confHerd)
     req(baseAttributes())  # Ensure `baseAttributes` is ready
     aoi <- aoiAttributes()
     base <- baseAttributes()
