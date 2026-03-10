@@ -115,7 +115,7 @@ server = function(input, output, session) {
                     choices = la, selected = "kde_annual"))
     } else{
       div(style = "margin-top: -30px;",  selectInput("saLayer", label = div(style = "font-size:13px;margin-top: -10px;", ""), 
-                                                     choices = "Annual range"))
+                                                     choices = "Annual range (YG)"))
     }
   })
 
@@ -124,7 +124,7 @@ server = function(input, output, session) {
   ################################################################################################
   output$polygonSelectUI <- renderUI({
     req(input$selectInput == "Little Rancheria")
-    req(input$saLayer != "Annual range")
+    req(input$saLayer != "Annual range (YG)")
     
     layer <- sf::st_read(herd(), layer = input$saLayer, quiet = TRUE)
     
@@ -275,7 +275,7 @@ server = function(input, output, session) {
     req(herd())
     req(input$saLayer)
     
-    rge_selected(paste(input$selectInput, input$saLayer, sep= "-"))
+    rge_selected(input$saLayer)
     if (input$selectInput == "Little Rancheria") {
       layer <- st_read(herd(), input$saLayer, quiet = TRUE)
       
@@ -1202,24 +1202,26 @@ server = function(input, output, session) {
       clearGroup("Mining Claims") %>%
       clearGroup("Placer Claims") %>%
       clearGroup("Quartz Claims") %>%
-      clearGroup("Caribou Herds")
+      clearGroup("Caribou Herds") %>%
+      clearGroup("Annual range (YG)")
     
     sa <- st_transform(studyarea(), 4326)
     map_bounds1 <- sa %>% st_bbox() %>% as.character()
-    
-    leafletProxy("map1") %>%
-        fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
-        addPolygons(data=sa, color='#663399', fill=F, opacity = 1, weight=3, group=rge_selected(), options = leafletOptions(pane = "top")) %>%
-      
-        addLayersControl(position = "topright",
-                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                       overlayGroups = c(rge_selected()),
-                       options = layersControlOptions(collapsed = FALSE)) 
     
     rge_clear(rge_selected())  
     herd_range(paste0(input$selectInput, "-", rge_selected()))
     dist_names_new <- c()
     group_names_new <- c(group_names())
+    
+    if(input$selectInput == "Little Rancheria"){
+      annual_range <- st_read(herd(), layer = "studyarea") %>% st_transform(4326)
+      leafletProxy("map1") %>% addPolygons(data=annual_range, color = 'black', fill=F, opacity= 1,  weight=1, group="Annual range (YG)", options = leafletOptions(pane = "top")) 
+    }
+    
+    leafletProxy("map1") %>%
+      fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
+      addPolygons(data=sa, color='#663399', fill=F, opacity = 1, weight=3, group=rge_selected(), options = leafletOptions(pane = "top"))
+      
     # Disturbance
     poly <- isolate(layers_rv$poly)
     if(!is.null(poly)){
@@ -1299,7 +1301,7 @@ server = function(input, output, session) {
     leafletProxy("map1") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                       overlayGroups = c(rge_selected(), dist_names_new, group_names_new),
+                       overlayGroups = c("Annual range (YG)", rge_selected(), dist_names_new, group_names_new),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       hideGroup(c(group_names()))
         
