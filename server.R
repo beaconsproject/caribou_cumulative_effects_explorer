@@ -27,6 +27,8 @@ server = function(input, output, session) {
   rast1_name <- reactiveVal()
   rast2_name <- reactiveVal()
   summaryStats <- reactiveVal(stats)
+  matrix_poly <- reactiveVal()
+  matrix_line <- reactiveVal()
   layers_rv <- reactiveValues(line = NULL,
                                 poly = NULL,
                                 mines = NULL,
@@ -325,14 +327,14 @@ server = function(input, output, session) {
       layers_rv$poly <- poly_sf
       statslayers_rv$poly <- poly_sf
       industry_poly("TYPE_INDUSTRY")
-      industry_poly("TYPE_DISTURBANCE")
+      disttype_poly("TYPE_DISTURBANCE")
     }
     if ("fires" %in% lyr_names()) {
       fi <-st_read(herd(), 'fires', quiet=T) %>%
-        suppressWarnings(st_cast('MULTIPOLYGON')) %>% 
         st_zm(drop = TRUE, what = "ZM")  %>%
         st_make_valid() %>%
-        mutate(area_ha = as.numeric(st_area(geom)/10000))
+        #suppressWarnings(st_cast('MULTIPOLYGON')) %>% 
+        mutate(area_ha = as.numeric(st_area(.)/10000))
       addGroup("Fires")
       layers_rv$fire_sf <- fi
       statslayers_rv$fire_sf <- fi
@@ -855,6 +857,8 @@ server = function(input, output, session) {
         dplyr::select(any_of(c("TYPE_FEATURE", "TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M", "LENGTH_KM"))) %>%
         as.matrix()
       
+      matrix_line(mline)
+      
       # Return the matrixInput to UI
       matrixInput("linear_buffers",
                   value = mline,
@@ -913,6 +917,7 @@ server = function(input, output, session) {
         dplyr::select(any_of(c("TYPE_FEATURE", "TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M", "AREA_KM2"))) %>%
         as.matrix()
       
+      matrix_poly(mpoly)
       matrixInput("areal_buffers",
                   value = mpoly,
                   rows = list(names = FALSE, extend = TRUE),
@@ -1229,7 +1234,7 @@ server = function(input, output, session) {
       dist_names_new <- c(dist_names_new,"Linear disturbances")
     }
     # Optional
-    fires <- isolate(fires())
+    fires <- isolate(layers_rv$fire_sf)
     if(!is.null(fires)){
         fires <- st_transform(fires, 4326)
         
@@ -1770,7 +1775,7 @@ server = function(input, output, session) {
   # Save features to a geopackage
   ##############################################################################
   output$downloadData <- downloadHandler(
-    filename = function() { paste("disturbance_explorer-", Sys.Date(), ".gpkg", sep="") },
+    filename = function() { paste("Caribou_CE_disturbance_explorer-", Sys.Date(), ".gpkg", sep="") },
     content = function(file) {
       
       x <- data.frame(Area_km2 = aoiAttributes()[1,2],
@@ -1821,9 +1826,24 @@ server = function(input, output, session) {
   # Save features to a geopackage
   ##############################################################################
   output$downloadStats <- downloadHandler(
-    filename = function() { paste("disturbance_explorer_stats-", Sys.Date(), ".csv", sep="") },
+    filename = function() { paste("Caribou_CE_disturbance_explorer_stats-", Sys.Date(), ".csv", sep="") },
     content = function(file) {
+      
       write.csv(summaryStats(), file, row.names = FALSE)
+    }
+  )
+  
+  ##############################################################################
+  # Save buffer matrix
+  ##############################################################################
+  output$downloadMatrix <- downloadHandler(
+    filename = function() { paste("Caribou_CE_disturbance_explorer_buffer-", Sys.Date(), ".csv", sep="") },
+    content = function(file) {
+      line <- as.tibble(matrix_line())
+      poly <- as.tibble(matrix_poly())
+      matrix <- dplyr::bind_rows(line, poly)
+      
+      write.csv(matrix, file, row.names = FALSE)
     }
   )
 }

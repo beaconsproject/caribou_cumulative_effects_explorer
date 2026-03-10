@@ -194,7 +194,8 @@ ui = dashboardPage(skin="black",
                                                  tags$h4("Define linear buffer sizes:"),
                                                  uiOutput("linear_matrix_ui"),
                                                  tags$h4("Define areal buffer sizes:"),
-                                                 uiOutput("areal_matrix_ui")
+                                                 uiOutput("areal_matrix_ui"),
+                                                 div(style="margin-right:10px;", downloadButton("downloadMatrix", "Download tables as csv", style='color: #000'))
                                         ),
                                         tabPanel("User Guide",
                                                  # Dynamically update the content of Guidance based on selected tab
