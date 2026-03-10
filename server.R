@@ -108,11 +108,12 @@ server = function(input, output, session) {
   output$saLayerUI <- renderUI({
     req(herd())
     
-    layer <- sf::st_layers(herd())
-    la <- layer$name[layer$name %in% rge_list]
     if(input$selectInput == "Little Rancheria"){
+      layer <- sf::st_layers(herd())
+      la <- layer$name[layer$name %in% rge_list]
+      li <- c("Annual range (YG)" ,la)
       div(style = "margin-top: -30px;",  selectInput("saLayer", label = div(style = "font-size:13px;margin-top: -10px;", "Select range/corridor"), 
-                    choices = la, selected = "kde_annual"))
+                    choices = li, selected = "Annual range (YG)"))
     } else{
       div(style = "margin-top: -30px;",  selectInput("saLayer", label = div(style = "font-size:13px;margin-top: -10px;", ""), 
                                                      choices = "Annual range (YG)"))
@@ -126,8 +127,11 @@ server = function(input, output, session) {
     req(input$selectInput == "Little Rancheria")
     req(input$saLayer != "Annual range (YG)")
     
-    layer <- sf::st_read(herd(), layer = input$saLayer, quiet = TRUE)
-    
+    if(input$saLayer == "Annual range (YG)"){
+      layer <- sf::st_read(herd(), layer = "studyarea", quiet = TRUE)
+    } else{
+      layer <- sf::st_read(herd(), layer = input$saLayer, quiet = TRUE)
+    }
     # get unique levels
     lvls <- unique(layer$level)
     if(length(lvls) > 1){
@@ -277,8 +281,11 @@ server = function(input, output, session) {
     
     rge_selected(input$saLayer)
     if (input$selectInput == "Little Rancheria") {
-      layer <- st_read(herd(), input$saLayer, quiet = TRUE)
-      
+      if(input$saLayer == "Annual range (YG)"){
+        layer <- st_read(herd(), "studyarea", quiet = TRUE)
+      } else {
+        layer <- st_read(herd(), input$saLayer, quiet = TRUE)
+      }  
       lvls <- unique(layer$level)
       if(length(lvls) > 1 && !is.null(input$polygonLevel)){
         layer %>%
@@ -306,7 +313,7 @@ server = function(input, output, session) {
 
     # create switch to clip
     if (input$selectInput =="Little Rancheria"){
-      if(input$saLayer == "studyarea"){
+      if(input$saLayer == "Annual range (YG)"){
         stat_switch <- FALSE
       }else{
         stat_switch <- TRUE
