@@ -273,7 +273,7 @@ server = function(input, output, session) {
     req(herd())
     req(input$saLayer)
     
-    rge_selected(input$saLayer)
+    rge_selected(paste(input$selectInput, input$saLayer, sep= "-"))
     if (input$selectInput == "Little Rancheria") {
       layer <- st_read(herd(), input$saLayer, quiet = TRUE)
       
@@ -1148,6 +1148,8 @@ server = function(input, output, session) {
     label_points <- st_point_on_surface(proposed_ipcas)
     label_points$Name <- c("Little Rancheria", "Tu Ball", "Tū Chō")
     
+    group_names(c("Mineral occurences", "Critical mineral occurrences", "Priority critical mineral occurrences"))
+    
     leaflet(options = leafletOptions(attributionControl=FALSE)) %>%
       #fitBounds(lng1 = -121, lat1 = 44, lng2 = -65, lat2 = 78) %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
@@ -1157,6 +1159,12 @@ server = function(input, output, session) {
       addProviderTiles("Esri.WorldImagery", group="Esri.WorldImagery") %>%
       addProviderTiles("Esri.WorldTopoMap", group="Esri.WorldTopoMap")%>% 
       addTiles(urlTemplate = "", group = "Blank Background") %>%
+      addPolygons(data=lakes, color='#97FFFF', fill=F,  opacity = 1, weight=2, group="Lakes", options = leafletOptions(pane = "ground")) %>%
+      addPolylines(data=rivers, color='#97FFFF', opacity = 1, weight=2, group="Rivers", options = leafletOptions(pane = "ground")) %>%
+      addCircleMarkers(data = critical_occ, radius = 1, color = "#8B7D6B", fillOpacity = 1, group = "Critical mineral occurrences") %>%
+      addCircleMarkers(data = mine_occ, radius = 1, color = "#FFD700", fillOpacity = 1, group = "Mineral occurences") %>%
+      addCircleMarkers(data = priority_occ, radius = 1, color = "#EE6363", fillOpacity = 1, group = "Priority critical mineral occurrences") %>%
+      
       addPolygons(data=IPCA_PL, color='black', fill=F,  opacity = 1, weight=2, group="IPCA planning area", options = leafletOptions(pane = "ground")) %>%
       addPolygons(data=kdtt, color='red', fill=F, weight=2, group="Kaska Dene Traditional Territory", options = leafletOptions(pane = "ground")) %>%
       addPolygons(data=proposed_ipcas, color = ~proposed_pal(Name), fillColor = ~proposed_pal(Name), fillOpacity = 0.2, weight=2, group="Proposed IPCAs", options = leafletOptions(pane = "ground")) %>%
@@ -1164,8 +1172,9 @@ server = function(input, output, session) {
       addPolygons(data=caribouherds, color='black', fill="grey", fillOpacity = 0.1, weight=3, layerId = caribouherds$HERD, popup = ~HERD, group="Caribou herds", options = leafletOptions(pane = "top")) %>% 
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
-                       overlayGroups = c("Caribou herds", "Proposed IPCAs"),
-                   options = layersControlOptions(collapsed = FALSE))
+                       overlayGroups = c("Caribou herds", "Proposed IPCAs", group_names()),
+                   options = layersControlOptions(collapsed = FALSE))%>%
+      hideGroup(c(group_names()))
   })
   
   observeEvent(input$confHerd,{
@@ -1205,7 +1214,7 @@ server = function(input, output, session) {
     rge_clear(rge_selected())  
     herd_range(paste0(input$selectInput, "-", rge_selected()))
     dist_names_new <- c()
-    group_names_new <- c()
+    group_names_new <- c(group_names())
     # Disturbance
     poly <- isolate(layers_rv$poly)
     if(!is.null(poly)){
@@ -1549,7 +1558,7 @@ server = function(input, output, session) {
     req(herd())
     aoi <- sum(st_area(studyarea()))
 
-    tibble(Attribute = "Study area (km2)", Value = as.numeric(round(aoi / 1000000, 0)))
+    tibble(Attribute = paste0(rge_selected(), " (range km2)"), Value = as.numeric(round(aoi / 1000000, 0)))
   })
 
   baseAttributes <- reactive({

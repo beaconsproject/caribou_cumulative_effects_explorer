@@ -43,6 +43,13 @@ IPCA_PL <- st_read("www/lfn_boundaries.gpkg", layer = "ipca_planning_area") %>%
 kdtt <- st_read("www/lfn_boundaries.gpkg", layer = "kdtt") %>% st_transform(4326)
 proposed_ipcas <- st_read("www/lfn_boundaries.gpkg", layer = "proposed_ipcas") %>% st_transform(4326)
 
+rivers <- st_read("www/KDTT_lakes_and_rivers.gpkg", layer = "large_rivers") %>% st_transform(4326)
+lakes <- st_read("www/KDTT_lakes_and_rivers.gpkg", layer = "frances_and_toobally_lakes") %>% st_transform(4326)
+
+critical_occ <- st_read("www/KDTT_mineral_occurrences.gpkg", layer = "kdtt_critical_mineral_occurrences") %>% st_transform(4326)
+mine_occ <- st_read("www/KDTT_mineral_occurrences.gpkg", layer = "kdtt_mineral_occurrences") %>% st_transform(4326)
+priority_occ <- st_read("www/KDTT_mineral_occurrences.gpkg", layer = "kdtt_priority_critical_mineral_occurrences") %>% st_transform(4326)
+
 isMappable <- function(x) {
   !is.null(x) && inherits(x, "sf") && nrow(x) > 0
 }
