@@ -4,9 +4,27 @@ server = function(input, output, session) {
   ################################################################################################
   # RELOAD
   observeEvent(input$reload_btn, {
-    session$reload()
+    showModal(
+      modalDialog(
+        title = "Confirm reload",
+        tagList(
+          p("You are about to reload the application."),
+          p("Any unsaved work or pending downloads may be lost."),
+          p("Do you want to reload the app?")
+        ),
+        footer = tagList(
+          modalButton("No"),
+          actionButton("confirm_reload", "Yes", class = "btn-danger")
+        ),
+        easyClose = FALSE
+      )
+    )
   })
   
+  observeEvent(input$confirm_reload, {
+    removeModal()
+    session$reload()
+  })
   ################################################################################################
   # Control overlayGroups
   herd <- reactiveVal(c())
@@ -111,7 +129,7 @@ server = function(input, output, session) {
     if(input$selectInput == "Little Rancheria"){
       layer <- sf::st_layers(herd())
       la <- layer$name[layer$name %in% rge_list]
-      li <- c("Annual range (YG)" ,la)
+      li <- c("Annual range (YG)", la)
       div(style = "margin-top: -30px;",  selectInput("saLayer", label = div(style = "font-size:13px;margin-top: -10px;", "Select range/corridor"), 
                     choices = li, selected = "Annual range (YG)"))
     } else{
@@ -135,7 +153,7 @@ server = function(input, output, session) {
     # get unique levels
     lvls <- unique(layer$level)
     if(length(lvls) > 1){
-      selectInput("polygonLevel", "Select level", choices = lvls)
+      selectInput("polygonLevel", "Select level", choices = c("Total area of use", "Core area"))
     }
   })
   ################################################################################################
@@ -288,8 +306,12 @@ server = function(input, output, session) {
       }  
       lvls <- unique(layer$level)
       if(length(lvls) > 1 && !is.null(input$polygonLevel)){
-        layer %>%
-          dplyr::filter(level == input$polygonLevel)
+        if(input$polygonLevel == "Core area"){
+          layer %>% dplyr::filter(level == 0.5)
+        } else{
+          layer %>% dplyr::filter(level == 0.95)
+        }
+        
       } else {
         layer
       }
@@ -313,11 +335,7 @@ server = function(input, output, session) {
 
     # create switch to clip
     if (input$selectInput =="Little Rancheria"){
-      if(input$saLayer == "Annual range (YG)"){
-        stat_switch <- FALSE
-      }else{
-        stat_switch <- TRUE
-      }
+      stat_switch <- TRUE
     }else{
       stat_switch <- FALSE
     }
@@ -1597,11 +1615,13 @@ server = function(input, output, session) {
     
     # If the user uploaded a shapefile via `other_dist()`
     if (!is.null(other_linedist())) {
-      other_linevalue <- round(sum(st_length(other_linedist())) / 1000, 1)
+      other_linedis <- other_linedist() %>% st_union()
+      other_linevalue <- round(sum(st_length(other_linedist)) / 1000, 1)
       other_linelabel <- "Other linear disturbances (km)"
     }
     if (!is.null(other_polydist())) {
-      other_polyvalue <- round(sum(st_area(other_polydist())) / 1e6, 1)
+      other_polydist <- other_polydist() %>% st_union()
+      other_polyvalue <- round(sum(st_area(other_polydist)) / 1e6, 1)
       other_polylabel <- "Other areal disturbances (km2)"
     }
     
@@ -1618,15 +1638,15 @@ server = function(input, output, session) {
         "Intact FL 2020 (%)**"
       ),
       Value = c(
-        if (is.null(statslayers_rv$line)) 0 else as.numeric(round(sum(st_length(statslayers_rv$line)) / 1000, 1)),
-        if (is.null(statslayers_rv$poly)) 0 else as.numeric(round(sum(st_area(statslayers_rv$poly)) / 1000000, 1)),
+        if (is.null(statslayers_rv$line)) 0 else as.numeric(round(st_length(st_union(statslayers_rv$line)) / 1000, 1)),
+        if (is.null(statslayers_rv$poly)) 0 else as.numeric(round(st_area(st_union(statslayers_rv$poly)) / 1000000, 1)),
         other_linevalue,
         other_polyvalue,
-        if (is.null(fires())) 0 else as.numeric(round(sum(st_area(fires())) / aoi * 100, 1)),
-        if (is.null(mines_all())) 0 else as.numeric(round(sum(st_area(mines_all())) / aoi * 100, 1)),
-        if (is.null(statslayers_rv$pa2021)) 0 else as.numeric(round(sum(st_area(statslayers_rv$pa2021)) / aoi * 100, 1)),
-        if (is.null(statslayers_rv$ifl2000)) 0 else as.numeric(round(sum(st_area(statslayers_rv$ifl2000)) / aoi * 100, 1)),
-        if (is.null(statslayers_rv$ifl2020)) 0 else as.numeric(round(sum(st_area(statslayers_rv$ifl2020)) / aoi * 100, 1))
+        if (is.null(fires())) 0 else as.numeric(round(st_area(st_union(fires())) / aoi * 100, 1)),
+        if (is.null(mines_all())) 0 else as.numeric(round(st_area(st_union(mines_all())) / aoi * 100, 1)),
+        if (is.null(statslayers_rv$pa2021)) 0 else as.numeric(round(st_area(st_union(statslayers_rv$pa2021)) / aoi * 100, 1)),
+        if (is.null(statslayers_rv$ifl2000)) 0 else as.numeric(round(st_area(st_union(statslayers_rv$ifl2000)) / aoi * 100, 1)),
+        if (is.null(statslayers_rv$ifl2020)) 0 else as.numeric(round(st_area(st_union(statslayers_rv$ifl2020)) / aoi * 100, 1))
       )
     )
   })  
@@ -1679,8 +1699,8 @@ server = function(input, output, session) {
         "Disturbed areas (%)"
       ),
       Value = c(
-        if (is.null(intactness_sf())) 0 else as.numeric(round(sum(st_area(intactness_sf())) / aoi * 100, 1)),
-        if (is.null(footprint)) 0 else as.numeric(round(sum(st_area(footprint)) / aoi * 100, 1))
+        if (is.null(intactness_sf())) 0 else as.numeric(round(st_area(st_union(intactness_sf())) / aoi * 100, 1)),
+        if (is.null(footprint)) 0 else as.numeric(round(st_area(st_union(footprint)) / aoi * 100, 1))
       )
     ))
   })
