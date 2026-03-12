@@ -31,7 +31,7 @@ server = function(input, output, session) {
   herd_range <- reactiveVal(c())
   rge_selected <- reactiveVal(c())
   rge_clear <- reactiveVal(c())
-  group_names <- reactiveVal(c("IPCA planning area", "Kaska Dene Traditional Territory", "Proposed IPCAs"))
+  group_names <- reactiveVal(c("IPCA planning area", "Kaska Dene Traditional Territory", "Proposed IPCAs", "Caribou herds"))
   dist_names <- reactiveVal(c("Critical mineral occurrences", "Priority critical mineral occurrences"))
   footprint_names_old <- reactiveVal(c())
   footprint_names_new <- reactiveVal(c())
@@ -1215,7 +1215,7 @@ server = function(input, output, session) {
   
     leafletProxy("map1") %>% 
       clearGroup(rge_clear()) %>%
-      clearGroup("Caribou herds") %>%
+      #clearGroup("Caribou herds") %>%
       clearGroup("Linear disturbances") %>%
       clearGroup("Areal disturbances") %>%
       clearGroup("Other linear disturbances") %>%
@@ -1312,12 +1312,12 @@ server = function(input, output, session) {
       dist_names_new <- c("Linear disturbances", dist_names_new)
     }
     # Optional
-    herds <- isolate(layers_rv$herds)
-    if(!is.null(herds)){
-      herds <- st_transform(herds, 4326)
-      leafletProxy("map1") %>% addPolygons(data=herds, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 0.5, group="Caribou herds", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Caribou herds")
-    }
+    #herds <- isolate(layers_rv$herds)
+    #if(!is.null(herds)){
+    #  herds <- st_transform(herds, 4326)
+    #  leafletProxy("map1") %>% addPolygons(data=herds, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 0.5, group="Caribou herds", options = leafletOptions(pane = "ground")) 
+    #  group_names_new <- c(group_names_new, "Caribou herds")
+    #}
     fires <- isolate(layers_rv$fire_sf)
     if(!is.null(fires)){
         fires <- st_transform(fires, 4326)
