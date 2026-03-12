@@ -37,7 +37,9 @@ IPCA_PL <- st_read("www/lfn_boundaries.gpkg", layer = "ipca_planning_area") %>%
   st_zm(drop = TRUE, what = "ZM") %>% 
   st_transform(4326)
 kdtt <- st_read("www/lfn_boundaries.gpkg", layer = "kdtt") %>% st_transform(4326)
-proposed_ipcas <- st_read("www/lfn_boundaries.gpkg", layer = "proposed_ipcas") %>% st_transform(4326)
+proposed_ipcas <- st_read("www/lfn_boundaries.gpkg", layer = "proposed_ipcas_all") %>% 
+  st_zm(drop = TRUE, what = "ZM") %>% 
+  st_transform(4326)
 
 rivers <- st_read("www/KDTT_lakes_and_rivers.gpkg", layer = "large_rivers") %>% st_transform(4326)
 lakes <- st_read("www/KDTT_lakes_and_rivers.gpkg", layer = "frances_and_toobally_lakes") %>% st_transform(4326)
