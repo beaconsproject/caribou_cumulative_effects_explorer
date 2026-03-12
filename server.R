@@ -989,16 +989,16 @@ server = function(input, output, session) {
     
     if (!is.null(layers_rv$poly) | !is.null(layers_rv$line) | !is.null(fires()) | !is.null(mines_all())  | !is.null(other_linedist()) | !is.null(other_polydist())) {
       if (!is.null(layers_rv$poly) | !is.null(layers_rv$line) ) {
-        if(input$selectInput =="usedemo"){
-          industry_line <- "TYPE_INDUSTRY"
-          disttype_line <- "TYPE_DISTURBANCE"
-          industry_poly <- "TYPE_INDUSTRY"
-          disttype_poly <- "TYPE_DISTURBANCE"
-        }else{
+        if(input$createMatrix) {
           industry_line <- input$lineindustry
           disttype_line <- input$linedisttype
           industry_poly <- input$polyindustry
           disttype_poly <- input$polydisttype
+        }else{
+          industry_line <- "TYPE_INDUSTRY"
+          disttype_line <- "TYPE_DISTURBANCE"
+          industry_poly <- "TYPE_INDUSTRY"
+          disttype_poly <- "TYPE_DISTURBANCE"
         }
         
         if (is.null(input$selectBuffer) && (!is.null(layers_rv$line) || !is.null(layers_rv$poly))){
@@ -1012,6 +1012,7 @@ server = function(input, output, session) {
           v2 <- NULL
           
         } else if (input$selectBuffer== "custom_buffers") {
+          
           if (!is.null(layers_rv$line) && nrow(layers_rv$line) > 0) {
             m1sub <- as_tibble(input$linear_buffers) %>% dplyr::select(any_of(c("TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M"))) %>%      
               mutate(BUFFER_SIZE_M=as.integer(BUFFER_SIZE_M))
@@ -1132,7 +1133,7 @@ server = function(input, output, session) {
         footprint_names_init <- "Disturbed areas (human + fires)"
       }
     } else {
-      if(length(footprint_sf())==0){
+      if(nrow(footprint_sf())==0){
         ifl <- studyarea()
         footprint_names_init <- "No disturbed areas"
       }else{
@@ -1897,8 +1898,8 @@ server = function(input, output, session) {
   output$downloadMatrix <- downloadHandler(
     filename = function() { paste("Caribou_CE_disturbance_explorer_buffer-", Sys.Date(), ".csv", sep="") },
     content = function(file) {
-      line <- as.tibble(matrix_line())
-      poly <- as.tibble(matrix_poly())
+      line <- as_tibble(input$linear_buffers)
+      poly <- as_tibble(input$areal_buffers)
       matrix <- dplyr::bind_rows(line, poly)
       
       write.csv(matrix, file, row.names = FALSE)
