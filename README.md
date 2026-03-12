@@ -10,7 +10,7 @@ The Caribou_CE_Disturbance_Explorer is an R shiny app that enables users to eval
 
 ## Running the App
 
-The app is located at: <https://beaconsproject.shinyapps.io/disturbance_explorer>
+The app is located at: <https://beaconsproject.shinyapps.io/caribou_ce_disturbance_explorer>
 
 The app can also be run from a local machine using the following steps (note, the first 2 steps only need to be run once):
 
