@@ -31,8 +31,8 @@ server = function(input, output, session) {
   herd_range <- reactiveVal(c())
   rge_selected <- reactiveVal(c())
   rge_clear <- reactiveVal(c())
-  group_names <- reactiveVal(c())
-  dist_names <- reactiveVal(c())
+  group_names <- reactiveVal(c("IPCA planning area", "Kaska Dene Traditional Territory", "Proposed IPCAs"))
+  dist_names <- reactiveVal(c("Critical mineral occurrences", "Priority critical mineral occurrences"))
   footprint_names_old <- reactiveVal(c())
   footprint_names_new <- reactiveVal(c())
   industry_line <- reactiveVal(NULL)
@@ -360,39 +360,45 @@ server = function(input, output, session) {
         st_make_valid() %>%
         #suppressWarnings(st_cast('MULTIPOLYGON')) %>% 
         mutate(area_ha = as.numeric(st_area(.)/10000))
-      addGroup("Fires")
+      #addGroup("Fires")
       layers_rv$fire_sf <- fi
       statslayers_rv$fire_sf <- fi
     }
     if ("Intact_FL_2000" %in% lyr_names()) {
       la <-st_read(herd(), 'Intact_FL_2000', quiet=T)
-      addGroup("Intact FL 2000")
+      #addGroup("Intact FL 2000")
       layers_rv$ifl2000 <- la
       statslayers_rv$ifl2000 <- la
     }
     if ("Intact_FL_2020" %in% lyr_names()) {
       la <-st_read(herd(), 'Intact_FL_2020', quiet=T)
-      addGroup("Intact FL 2020")
+      #addGroup("Intact FL 2020")
       layers_rv$ifl2020 <- la
       statslayers_rv$ifl2020 <- la
     }
     if ("protected_areas" %in% lyr_names()) {
       la <-st_read(herd(), 'protected_areas', quiet=T)
-      addGroup("Protected areas")
+      #addGroup("Protected areas")
       layers_rv$pa2021 <- la
       statslayers_rv$pa2021 <- la
     }
     if ("Placer_Claims" %in% lyr_names()) {
       la <-st_read(herd(), 'Placer_Claims', quiet=T)
-      addGroup("Placer Claims")
+      #addGroup("Placer Claims")
       layers_rv$placers <- la
       statslayers_rv$placers <- la
     }
     if ("Quartz_Claims" %in% lyr_names()) {
       la <-st_read(herd(), 'Quartz_Claims', quiet=T)
-      addGroup("Quartz Claims")
+      #addGroup("Quartz Claims")
       layers_rv$quartz <- la
       statslayers_rv$quartz <- la
+    }
+    if ("Caribou_Herds" %in% lyr_names()) {
+      la <-st_read(herd(), 'Caribou_Herds', quiet = TRUE)
+      #addGroup("Caribou Herds")
+      layers_rv$herds <- la
+      statslayers_rv$herds <- la
     }
     
     if(stat_switch){
@@ -421,7 +427,7 @@ server = function(input, output, session) {
           st_make_valid() %>%
           mutate(area_ha = as.numeric(st_area(geom)/10000))
         if(nrow(fi)>0){
-          addGroup("Fires")
+          #addGroup("Fires")
           statslayers_rv$fire_sf <- fi
         }
       }
@@ -429,7 +435,7 @@ server = function(input, output, session) {
         la <-st_read(herd(), 'Intact_FL_2000', quiet = TRUE) %>% 
           st_intersection(studyarea())
         if(nrow(la)>0){
-          addGroup("Intact FL 2000")
+          #addGroup("Intact FL 2000")
           statslayers_rv$ifl2000 <- la
         }
       }
@@ -437,7 +443,7 @@ server = function(input, output, session) {
         la <-st_read(herd(), 'Intact_FL_2020', quiet = TRUE) %>% 
           st_intersection(studyarea())
         if(nrow(la)>0){
-          addGroup("Intact FL 2020")
+          #addGroup("Intact FL 2020")
           statslayers_rv$ifl2020 <- la
         }
       }
@@ -445,20 +451,20 @@ server = function(input, output, session) {
         la <-st_read(herd(), 'protected_areas', quiet = TRUE) %>% 
           st_intersection(studyarea())
         if(nrow(la)>0){
-          addGroup("Protected areas")
+          #addGroup("Protected areas")
           statslayers_rv$pa2021 <- la
         }
       }
       if ("Caribou_Herds" %in% lyr_names()) {
         la <-st_read(herd(), 'Caribou_Herds', quiet = TRUE)
-        addGroup("Caribou Herds")
+        #addGroup("Caribou Herds")
         statslayers_rv$herds <- la
       }
       if ("Placer_Claims" %in% lyr_names()) {
         la <-st_read(herd(), 'Placer_Claims', quiet = TRUE) %>% 
           st_intersection(studyarea())
         if(nrow(la)>0){
-          addGroup("Placer Claims")
+          #addGroup("Placer Claims")
           statslayers_rv$placers <- la
         }
       }
@@ -466,7 +472,7 @@ server = function(input, output, session) {
         la <-st_read(herd(), 'Quartz_Claims', quiet = TRUE) %>% 
           st_intersection(studyarea())
         if(nrow(la)>0){
-          addGroup("Quartz Claims")
+          #addGroup("Quartz Claims")
           statslayers_rv$quartz <- la
         }
       }
@@ -474,7 +480,7 @@ server = function(input, output, session) {
         la <-st_read(herd(), 'Mining_Claims', quiet = TRUE) %>% 
           st_intersection(studyarea())
         if(nrow(la)>0){
-          addGroup("Mining Claims")
+          #addGroup("Mining Claims")
           statslayers_rv$mines <- la
         }
       } 
@@ -1171,14 +1177,9 @@ server = function(input, output, session) {
   output$map1 <- renderLeaflet({
     map_bounds1 <- IPCA_PL %>% st_bbox() %>% as.character()
     
-    proposed_pal <- colorFactor(
-      palette = c("purple", "orange", "green"),
-      domain = proposed_ipcas$Name
-    ) 
+    herd_pal <- colorFactor(palette = c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928'), domain = caribouherds$HERD)
     label_points <- st_point_on_surface(proposed_ipcas)
-    label_points$Name <- c("Little Rancheria", "Tu Ball", "Tū Chō")
-    
-    group_names(c("Mineral occurences", "Critical mineral occurrences", "Priority critical mineral occurrences"))
+    label_points$layer <- c("Little Rancheria", "Dene K'éh Kusān", "Ross River MOU IPCA Study Area","Toobally", "Tū Chō")
     
     leaflet(options = leafletOptions(attributionControl=FALSE)) %>%
       #fitBounds(lng1 = -121, lat1 = 44, lng2 = -65, lat2 = 78) %>%
@@ -1192,19 +1193,19 @@ server = function(input, output, session) {
       addPolygons(data=lakes, color='#97FFFF', fill=F,  opacity = 1, weight=2, group="Lakes", options = leafletOptions(pane = "ground")) %>%
       addPolylines(data=rivers, color='#97FFFF', opacity = 1, weight=2, group="Rivers", options = leafletOptions(pane = "ground")) %>%
       addCircleMarkers(data = critical_occ, radius = 1, color = "#8B7D6B", fillOpacity = 1, group = "Critical mineral occurrences") %>%
-      addCircleMarkers(data = mine_occ, radius = 1, color = "#FFD700", fillOpacity = 1, group = "Mineral occurences") %>%
+      #addCircleMarkers(data = mine_occ, radius = 1, color = "#FFD700", fillOpacity = 1, group = "Mineral occurences") %>%
       addCircleMarkers(data = priority_occ, radius = 1, color = "#EE6363", fillOpacity = 1, group = "Priority critical mineral occurrences") %>%
       
       addPolygons(data=IPCA_PL, color='black', fill=F,  opacity = 1, weight=2, group="IPCA planning area", options = leafletOptions(pane = "ground")) %>%
       addPolygons(data=kdtt, color='red', fill=F, weight=2, group="Kaska Dene Traditional Territory", options = leafletOptions(pane = "ground")) %>%
-      addPolygons(data=proposed_ipcas, color = ~proposed_pal(Name), fillColor = ~proposed_pal(Name), fillOpacity = 0.2, weight=2, group="Proposed IPCAs", options = leafletOptions(pane = "ground")) %>%
-      addLabelOnlyMarkers(data = label_points, label = ~Name, labelOptions = labelOptions(noHide = TRUE, direction = "center", textOnly = TRUE, style = list("font-weight"="bold","font-size"="14px","color"="black")), group = "Proposed IPCAs") %>%
-      addPolygons(data=caribouherds, color='black', fill="grey", fillOpacity = 0.1, weight=3, layerId = caribouherds$HERD, popup = ~HERD, group="Caribou herds", options = leafletOptions(pane = "top")) %>% 
+      addPolygons(data=proposed_ipcas, color = 'black', fill = T, fillOpacity = 0.2, weight=1, group="Proposed IPCAs", options = leafletOptions(pane = "ground")) %>%
+      addLabelOnlyMarkers(data = label_points, label = ~layer, labelOptions = labelOptions(noHide = TRUE, direction = "center", textOnly = TRUE, style = list("font-weight"="bold","font-size"="12px","color"="black")), group = "Proposed IPCAs") %>%
+      addPolygons(data=caribouherds, color=~herd_pal(HERD), fillColor = ~herd_pal(HERD), fillOpacity = 0.6, weight=3, layerId = caribouherds$HERD, popup = ~HERD, group="Caribou herds", options = leafletOptions(pane = "top")) %>% 
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
-                       overlayGroups = c("Caribou herds", "Proposed IPCAs", group_names()),
+                       overlayGroups = c("IPCA planning area", "Kaska Dene Traditional Territory", "Proposed IPCAs", "Caribou herds", "Critical mineral occurrences", "Priority critical mineral occurrences"),
                    options = layersControlOptions(collapsed = FALSE))%>%
-      hideGroup(c(group_names()))
+      hideGroup(c("Critical mineral occurrences", "Priority critical mineral occurrences"))
   })
   
   observeEvent(input$confHerd,{
@@ -1214,7 +1215,6 @@ server = function(input, output, session) {
     leafletProxy("map1") %>% 
       clearGroup(rge_clear()) %>%
       clearGroup("Caribou herds") %>%
-      clearGroup("Proposed IPCAs") %>%
       clearGroup("Linear disturbances") %>%
       clearGroup("Areal disturbances") %>%
       clearGroup("Other linear disturbances") %>%
@@ -1227,40 +1227,96 @@ server = function(input, output, session) {
       clearGroup("Mining Claims") %>%
       clearGroup("Placer Claims") %>%
       clearGroup("Quartz Claims") %>%
-      clearGroup("Caribou Herds") %>%
-      clearGroup("Annual range (YG)")
+      clearGroup("Annual range (YG)") %>%
+      # Little Rancheria related
+      clearGroup("Fall core area") %>%
+      clearGroup("Fall corridor") %>%
+      clearGroup("Annual use area") %>%
+      clearGroup("Late winter area") %>%
+      clearGroup("Early winter area") %>%
+      clearGroup("Fall rut") %>%
+      clearGroup("Summer use area") %>%
+      clearGroup("Spring core area") %>%
+      clearGroup("Spring corridor")
     
     sa <- st_transform(studyarea(), 4326)
     map_bounds1 <- sa %>% st_bbox() %>% as.character()
     
     rge_clear(rge_selected())  
     herd_range(paste0(input$selectInput, "-", rge_selected()))
-    dist_names_new <- c()
-    group_names_new <- c(group_names())
-    
+    dist_names_new <- c(dist_names())
+
     if(input$selectInput == "Little Rancheria"){
+      fall_high_use_areas <- st_read(herd(), layer = "fall_high_use_areas") %>% st_transform(4326)
+      fall_main_corridor <- st_read(herd(), layer = "fall_main_corridor") %>% st_transform(4326)
+      kde_annual <- st_read(herd(), layer = "kde_annual") %>% st_transform(4326)
+      kde_latewinter <- st_read(herd(), layer = "kde_latewinter") %>% st_transform(4326)
+      kde_earlywinter <- st_read(herd(), layer = "kde_earlywinter") %>% st_transform(4326)
+      kde_fallrut <- st_read(herd(), layer = "kde_fallrut") %>% st_transform(4326)
+      kde_summer <- st_read(herd(), layer = "kde_summer") %>% st_transform(4326)
+      spring_high_use_areas <- st_read(herd(), layer = "spring_high_use_areas") %>% st_transform(4326)
+      spring_main_corridor <- st_read(herd(), layer = "spring_main_corridor") %>% st_transform(4326)
       annual_range <- st_read(herd(), layer = "studyarea") %>% st_transform(4326)
+      
       leafletProxy("map1") %>% addPolygons(data=annual_range, color = 'black', fill=F, opacity= 1,  weight=1, group="Annual range (YG)", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=fall_high_use_areas, fillColor = '#D8BFD8', fill=T, opacity= 2,  weight=0, group="Fall core area", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=fall_main_corridor, fillColor = '#FFCC99', fill=T, opacity= 2,  weight=0, group="Fall corridor", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=kde_annual, fillColor = '#66FF66', fill=T, opacity= 1,  weight=0, group="Annual use area", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=kde_latewinter, fillColor = '#993399', fill=T, opacity= 0.5,  weight=0, group="Late winter area", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=kde_earlywinter, fillColor = '#6666FF', fill=T, opacity= 1,  weight=0, group="Early winter area", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=kde_fallrut, fillColor = '#003366', fill=T, opacity= 0.5,  weight=0, group="Fall rut", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=kde_summer, fillColor = '#FF3366', fill=T, opacity= 0.5,  weight=0, group="Summer use area", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=spring_high_use_areas, fillColor = '#669999', fill=T, opacity= 1,  weight=0, group="Spring core area", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=spring_main_corridor, fillColor = '#CC9900', fill=T, opacity= 1,  weight=0, group="Spring corridor", options = leafletOptions(pane = "top")) 
+      group_names_new <- c(group_names(), "Fall core area","Fall corridor", "Annual use area", "Late winter area", "Early winter area", "Fall rut", "Summer use area", "Spring core area","Spring corridor")
+    } else {
+      group_names_new <- c(group_names())
     }
     
     leafletProxy("map1") %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
       addPolygons(data=sa, color='#663399', fill=F, opacity = 1, weight=3, group=rge_selected(), options = leafletOptions(pane = "top"))
-      
+
+    #Mining
+    placers <- isolate(layers_rv$placers)
+    if(!is.null(placers)){
+      placers <- st_transform(placers, 4326)
+      leafletProxy("map1") %>% addPolygons(data=placers, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Placer Claims", options = leafletOptions(pane = "ground")) 
+      dist_names_new <- c(dist_names_new, "Placer Claims")
+    }
+    quartz <- isolate(layers_rv$quartz)
+    if(!is.null(quartz)){
+      quartz <- st_transform(quartz, 4326)
+      leafletProxy("map1") %>% addPolygons(data=quartz, color = '#CCCCCC', fill=T, fillColor='#CCCCCC', weight=1, fillOpacity = 1, group="Quartz Claims", options = leafletOptions(pane = "ground")) 
+      dist_names_new <- c(dist_names_new, "Quartz Claims")
+    }
+    
+    mines <- isolate(layers_rv$mines)
+    if(!is.null(mines)){
+      mines <- st_transform(mines, 4326)
+      leafletProxy("map1") %>% addPolygons(data=mines, color='#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Mining Claims", options = leafletOptions(pane = "ground")) 
+      dist_names_new <- c(dist_names_new, "Mining Claims")
+    }       
     # Disturbance
     poly <- isolate(layers_rv$poly)
     if(!is.null(poly)){
       poly <- st_transform(poly, 4326)
       leafletProxy("map1") %>% addPolygons(data=poly, color = '#660000', fill=T, fillColor='#660000', fillOpacity=0.8, weight=1, group="Areal disturbances", options = leafletOptions(pane = "top")) 
-      dist_names_new <- c(dist_names_new,"Areal disturbances")
+      dist_names_new <- c("Areal disturbances", dist_names_new)
     }
     line <- isolate(layers_rv$line)
     if(!is.null(line)){
       line <- st_transform(line, 4326)
       leafletProxy("map1") %>% addPolylines(data=line, color = "#CC3333",  weight=2, group="Linear disturbances", options = leafletOptions(pane = "top")) 
-      dist_names_new <- c(dist_names_new,"Linear disturbances")
+      dist_names_new <- c("Linear disturbances", dist_names_new)
     }
     # Optional
+    herds <- isolate(layers_rv$herds)
+    if(!is.null(herds)){
+      herds <- st_transform(herds, 4326)
+      leafletProxy("map1") %>% addPolygons(data=herds, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 0.5, group="Caribou herds", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Caribou herds")
+    }
     fires <- isolate(layers_rv$fire_sf)
     if(!is.null(fires)){
         fires <- st_transform(fires, 4326)
@@ -1279,6 +1335,12 @@ server = function(input, output, session) {
         leafletProxy("map1") %>% addPolygons(data=fires, fill=T, stroke=F, fillColor=~pal(CAUSE_LABEL), fillOpacity=0.8, group="Fires", options = leafletOptions(pane = "top")) 
         group_names_new <- c(group_names_new, "Fires")
     }
+    pa2021 <- isolate(layers_rv$pa2021)
+    if(!is.null(pa2021)){
+      pa2021 <- st_transform(pa2021, 4326)
+      leafletProxy("map1") %>% addPolygons(data=pa2021, fill=T, stroke=F, fillColor='#699999', fillOpacity=1,  group="Protected areas", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Protected areas")
+    }
     ifl2000 <- isolate(layers_rv$ifl2000)
     if(!is.null(ifl2000)){
       ifl2000 <- st_transform(ifl2000, 4326)
@@ -1291,45 +1353,14 @@ server = function(input, output, session) {
       leafletProxy("map1") %>% addPolygons(data=ifl2020, fill=T, stroke=F, fillColor='#000066', fillOpacity=0.5, group="Intact FL 2020", options = leafletOptions(pane = "ground")) 
       group_names_new <- c(group_names_new, "Intact FL 2020")
     }
-    pa2021 <- isolate(layers_rv$pa2021)
-    if(!is.null(pa2021)){
-      pa2021 <- st_transform(pa2021, 4326)
-      leafletProxy("map1") %>% addPolygons(data=pa2021, fill=T, stroke=F, fillColor='#699999', fillOpacity=1,  group="Protected areas", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Protected areas")
-    }
-    herds <- isolate(layers_rv$herds)
-    if(!is.null(herds)){
-      herds <- st_transform(herds, 4326)
-      leafletProxy("map1") %>% addPolygons(data=herds, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Caribou Herds", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Caribou Herds")
-    }
-    placers <- isolate(layers_rv$placers)
-    if(!is.null(placers)){
-      placers <- st_transform(placers, 4326)
-      leafletProxy("map1") %>% addPolygons(data=placers, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Placer Claims", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Placer Claims")
-    }
-    quartz <- isolate(layers_rv$quartz)
-    if(!is.null(quartz)){
-      quartz <- st_transform(quartz, 4326)
-      leafletProxy("map1") %>% addPolygons(data=quartz, color = '#CCCCCC', fill=T, fillColor='#CCCCCC', weight=1, fillOpacity = 1, group="Quartz Claims", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Quartz Claims")
-    }
-    
-    mines <- isolate(layers_rv$mines)
-    if(!is.null(mines)){
-      mines <- st_transform(mines, 4326)
-      leafletProxy("map1") %>% addPolygons(data=mines, color='#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Mining Claims", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Mining Claims")
-    } 
     
     leafletProxy("map1") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                       overlayGroups = c("Annual range (YG)", rge_selected(), dist_names_new, group_names_new),
+                       overlayGroups = c("Annual range (YG)", rge_selected(), group_names_new, dist_names_new),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c(group_names()))
-        
+      hideGroup(c(group_names(), "Fires", "Protected areas", "Intact FL 2000", "Intact FL 2020"))
+      
     # Close the modal once processing is done
     dist_names(dist_names_new)
     group_names(group_names_new)
@@ -1495,7 +1526,7 @@ server = function(input, output, session) {
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
                        overlayGroups = c(rge_selected(), dist_names(), group_names_new),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c("Streams", "Catchments", group_names()))
+      hideGroup(group_names())
     
     group_names(group_names_new)
   })  
@@ -1563,7 +1594,7 @@ server = function(input, output, session) {
       map1 <- map1 %>% addPolygons(data=intact_sf, color='#336633', stroke=F, fillOpacity=0.5, group='Undisturbed areas', options = leafletOptions(pane = "top")) %>%
         addLayersControl(position = "topright",
                          baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                         overlayGroups = c(rge_selected(), "Undisturbed areas", dist_names(), group_names()),
+                         overlayGroups = c(rge_selected(), group_names(), "Undisturbed areas", dist_names()),
                          options = layersControlOptions(collapsed = FALSE)) %>%
         hideGroup(c(footprint_names_new(), group_names()))
     }  
@@ -1571,7 +1602,7 @@ server = function(input, output, session) {
       map1 <- map1 %>% addPolygons(data=fp_sf, color='black', stroke=F, fillOpacity=0.5, group=footprint_names_new(), options = leafletOptions(pane = "top")) %>%
         addLayersControl(position = "topright",
                          baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                         overlayGroups = c(rge_selected(), "Undisturbed areas", footprint_names_new(), dist_names(), group_names()),
+                         overlayGroups = c(rge_selected(), group_names(), "Undisturbed areas", footprint_names_new(), dist_names()),
                          options = layersControlOptions(collapsed = FALSE)) %>%
         hideGroup(c(footprint_names_new(), group_names()))
     } 
@@ -1846,8 +1877,6 @@ server = function(input, output, session) {
           st_write(footprint_sf(), dsn=file, layer='disturbed', append=TRUE)
         }
       }
-       
-        
     }
   )
   
