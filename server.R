@@ -33,6 +33,8 @@ server = function(input, output, session) {
   rge_clear <- reactiveVal(c())
   group_names <- reactiveVal(c("IPCA planning area", "Kaska Dene Traditional Territory", "Proposed IPCAs", "Caribou herds"))
   dist_names <- reactiveVal(c("Critical mineral occurrences", "Priority critical mineral occurrences"))
+  range_names <-reactiveVal(c())
+  add_names <-  reactiveVal(c())
   footprint_names_old <- reactiveVal(c())
   footprint_names_new <- reactiveVal(c())
   industry_line <- reactiveVal(NULL)
@@ -1230,15 +1232,15 @@ server = function(input, output, session) {
       clearGroup("Quartz Claims") %>%
       clearGroup("Annual range (YG)") %>%
       # Little Rancheria related
-      clearGroup("Fall core area") %>%
-      clearGroup("Fall corridor") %>%
-      clearGroup("Annual use area") %>%
-      clearGroup("Late winter area") %>%
-      clearGroup("Early winter area") %>%
+      clearGroup("Fall high use areas") %>%
+      clearGroup("Fall main corridor") %>%
+      clearGroup("Annual range") %>%
+      clearGroup("Late winter") %>%
+      clearGroup("Early winter") %>%
       clearGroup("Fall rut") %>%
-      clearGroup("Summer use area") %>%
-      clearGroup("Spring core area") %>%
-      clearGroup("Spring corridor")
+      clearGroup("Summer") %>%
+      clearGroup("Spring high use areas") %>%
+      clearGroup("Spring main corridor")
     
     sa <- st_transform(studyarea(), 4326)
     map_bounds1 <- sa %>% st_bbox() %>% as.character()
@@ -1246,38 +1248,43 @@ server = function(input, output, session) {
     rge_clear(rge_selected())  
     herd_range(paste0(input$selectInput, "-", rge_selected()))
     dist_names_new <- c(dist_names())
+    add_names_new <- c(add_names())
 
     if(input$selectInput == "Little Rancheria"){
-      fall_high_use_areas <- st_read(herd(), layer = "fall_high_use_areas") %>% st_transform(4326)
-      fall_main_corridor <- st_read(herd(), layer = "fall_main_corridor") %>% st_transform(4326)
-      kde_annual <- st_read(herd(), layer = "kde_annual") %>% st_transform(4326)
-      kde_latewinter <- st_read(herd(), layer = "kde_latewinter") %>% st_transform(4326)
-      kde_earlywinter <- st_read(herd(), layer = "kde_earlywinter") %>% st_transform(4326)
-      kde_fallrut <- st_read(herd(), layer = "kde_fallrut") %>% st_transform(4326)
-      kde_summer <- st_read(herd(), layer = "kde_summer") %>% st_transform(4326)
-      spring_high_use_areas <- st_read(herd(), layer = "spring_high_use_areas") %>% st_transform(4326)
-      spring_main_corridor <- st_read(herd(), layer = "spring_main_corridor") %>% st_transform(4326)
+      fall_high_use_areas <- st_read(herd(), layer = "Fall high use areas") %>% st_transform(4326)
+      fall_main_corridor <- st_read(herd(), layer = "Fall main corridor") %>% st_transform(4326)
+      kde_annual <- st_read(herd(), layer = "Annual range") %>% st_transform(4326)
+      kde_latewinter <- st_read(herd(), layer = "Late winter") %>% st_transform(4326)
+      kde_earlywinter <- st_read(herd(), layer = "Early winter") %>% st_transform(4326)
+      kde_fallrut <- st_read(herd(), layer = "Fall rut") %>% st_transform(4326)
+      kde_summer <- st_read(herd(), layer = "Summer") %>% st_transform(4326)
+      spring_high_use_areas <- st_read(herd(), layer = "Spring high use areas") %>% st_transform(4326)
+      spring_main_corridor <- st_read(herd(), layer = "Spring main corridor") %>% st_transform(4326)
       annual_range <- st_read(herd(), layer = "studyarea") %>% st_transform(4326)
       
       leafletProxy("map1") %>% addPolygons(data=annual_range, color = 'black', fill=F, opacity= 1,  weight=1, group="Annual range (YG)", options = leafletOptions(pane = "top")) 
-      leafletProxy("map1") %>% addPolygons(data=fall_high_use_areas, fillColor = '#D8BFD8', fill=T, opacity= 2,  weight=0, group="Fall core area", options = leafletOptions(pane = "top")) 
-      leafletProxy("map1") %>% addPolygons(data=fall_main_corridor, fillColor = '#FFCC99', fill=T, opacity= 2,  weight=0, group="Fall corridor", options = leafletOptions(pane = "top")) 
-      leafletProxy("map1") %>% addPolygons(data=kde_annual, fillColor = '#66FF66', fill=T, opacity= 1,  weight=0, group="Annual use area", options = leafletOptions(pane = "top")) 
-      leafletProxy("map1") %>% addPolygons(data=kde_latewinter, fillColor = '#993399', fill=T, opacity= 0.5,  weight=0, group="Late winter area", options = leafletOptions(pane = "top")) 
-      leafletProxy("map1") %>% addPolygons(data=kde_earlywinter, fillColor = '#6666FF', fill=T, opacity= 1,  weight=0, group="Early winter area", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=fall_high_use_areas, fillColor = '#D8BFD8', fill=T, opacity= 2,  weight=0, group="Fall high use areas", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=fall_main_corridor, fillColor = '#FFCC99', fill=T, opacity= 2,  weight=0, group="Fall main corridor", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=kde_annual, fillColor = '#66FF66', fill=T, opacity= 1,  weight=0, group="Annual range", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=kde_latewinter, fillColor = '#993399', fill=T, opacity= 0.5,  weight=0, group="Late winter", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=kde_earlywinter, fillColor = '#6666FF', fill=T, opacity= 1,  weight=0, group="Early winter", options = leafletOptions(pane = "top")) 
       leafletProxy("map1") %>% addPolygons(data=kde_fallrut, fillColor = '#003366', fill=T, opacity= 0.5,  weight=0, group="Fall rut", options = leafletOptions(pane = "top")) 
-      leafletProxy("map1") %>% addPolygons(data=kde_summer, fillColor = '#FF3366', fill=T, opacity= 0.5,  weight=0, group="Summer use area", options = leafletOptions(pane = "top")) 
-      leafletProxy("map1") %>% addPolygons(data=spring_high_use_areas, fillColor = '#669999', fill=T, opacity= 1,  weight=0, group="Spring core area", options = leafletOptions(pane = "top")) 
-      leafletProxy("map1") %>% addPolygons(data=spring_main_corridor, fillColor = '#CC9900', fill=T, opacity= 1,  weight=0, group="Spring corridor", options = leafletOptions(pane = "top")) 
-      group_names_new <- c(group_names(), "Fall core area","Fall corridor", "Annual use area", "Late winter area", "Early winter area", "Fall rut", "Summer use area", "Spring core area","Spring corridor")
+      leafletProxy("map1") %>% addPolygons(data=kde_summer, fillColor = '#FF3366', fill=T, opacity= 0.5,  weight=0, group="Summer", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=spring_high_use_areas, fillColor = '#669999', fill=T, opacity= 1,  weight=0, group="Spring high use areas", options = leafletOptions(pane = "top")) 
+      leafletProxy("map1") %>% addPolygons(data=spring_main_corridor, fillColor = '#CC9900', fill=T, opacity= 1,  weight=0, group="Spring main corridor", options = leafletOptions(pane = "top")) 
+      group_names_new <- c(group_names())
+      range_names_new <- c(range_names(), "Fall high use areas","Fall main corridor", "Annual range", "Late winter", "Early winter", "Fall rut", "Summer", "Spring high use areas","Spring main corridor")
     } else {
       group_names_new <- c(group_names())
+      range_names_new <- c(range_names())
     }
     
     leafletProxy("map1") %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
-      addPolygons(data=sa, color='#663399', fill=F, opacity = 1, weight=3, group=rge_selected(), options = leafletOptions(pane = "top"))
-
+      addPolygons(data=sa, color='#663399', fill=F, opacity = 1, weight=3, group=rge_selected(), options = leafletOptions(pane = "top")) %>%
+      showGroup(rge_selected())
+    range_names_new <- setdiff(range_names_new, rge_selected())
+    
     #Mining
     placers <- isolate(layers_rv$placers)
     if(!is.null(placers)){
@@ -1334,38 +1341,39 @@ server = function(input, output, session) {
         )
         
         leafletProxy("map1") %>% addPolygons(data=fires, fill=T, stroke=F, fillColor=~pal(CAUSE_LABEL), fillOpacity=0.8, group="Fires", options = leafletOptions(pane = "top")) 
-        group_names_new <- c(group_names_new, "Fires")
+        dist_names_new <- c("Fires", dist_names_new)
     }
     pa2021 <- isolate(layers_rv$pa2021)
     if(!is.null(pa2021)){
       pa2021 <- st_transform(pa2021, 4326)
       leafletProxy("map1") %>% addPolygons(data=pa2021, fill=T, stroke=F, fillColor='#699999', fillOpacity=1,  group="Protected areas", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Protected areas")
+      add_names_new <- c(add_names_new, "Protected areas")
     }
     ifl2000 <- isolate(layers_rv$ifl2000)
     if(!is.null(ifl2000)){
       ifl2000 <- st_transform(ifl2000, 4326)
       leafletProxy("map1") %>% addPolygons(data=ifl2000, fill=T, stroke=F, fillColor='#3366FF', fillOpacity=0.5, group="Intact FL 2000", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Intact FL 2000")
+      add_names_new <- c(add_names_new, "Intact FL 2000")
     }
     ifl2020 <- isolate(layers_rv$ifl2020)
     if(!is.null(ifl2020)){
       ifl2020 <- st_transform(ifl2020, 4326)
       leafletProxy("map1") %>% addPolygons(data=ifl2020, fill=T, stroke=F, fillColor='#000066', fillOpacity=0.5, group="Intact FL 2020", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Intact FL 2020")
+      add_names_new <- c(add_names_new, "Intact FL 2020")
     }
     
     leafletProxy("map1") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                       overlayGroups = c("Annual range (YG)", rge_selected(), group_names_new, dist_names_new),
+                       overlayGroups = c("Annual range (YG)", rge_selected(), group_names_new, range_names_new, dist_names_new, add_names_new),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c(group_names(), "Fires", "Protected areas", "Intact FL 2000", "Intact FL 2020"))
+      hideGroup(c(group_names(), range_names_new, "Fires", add_names_new))
       
     # Close the modal once processing is done
     dist_names(dist_names_new)
     group_names(group_names_new)
-    removeModal()
+    range_names(range_names_new)
+    add_names(add_names_new)
     
         ################################################################################################
     # Add modal if layers are missing
@@ -1400,6 +1408,7 @@ server = function(input, output, session) {
           footer =  modalButton("OK"))
         )  
     }
+    removeModal()
   })
   
   observeEvent(input$confUpload,{ 
@@ -1435,9 +1444,9 @@ server = function(input, output, session) {
     leafletProxy("map1") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                       overlayGroups = c(rge_selected(), dist_names_new, group_names()),
+                       overlayGroups = c(rge_selected(), group_names(), range_names(), dist_names_new, add_names()),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c(group_names()))
+      hideGroup(c(group_names(), range_names(), add_names()))
     
     dist_names(dist_names_new)
   }) 
@@ -1451,7 +1460,7 @@ server = function(input, output, session) {
       clearGroup(display3_name()) %>%
       clearGroup(rast1_name())
     
-    group_names_new <- group_names()
+    add_names_new <- add_names()
     
     if (isMappable(display1_sf())) { 
       display1 <- st_transform(display1_sf(), 4326)
@@ -1466,7 +1475,7 @@ server = function(input, output, session) {
         showNotification("Unsupported geometry type", type = "error")
       }
 
-      group_names_new <- c(group_names_new,display1_name())
+      add_names_new <- c(display1_name(), add_names_new)
     } 
     
     if (isMappable(display2_sf())) { 
@@ -1482,7 +1491,7 @@ server = function(input, output, session) {
         showNotification("Unsupported geometry type", type = "error")
       }
 
-      group_names_new <- c(group_names_new,display2_name())
+      add_names_new <- c(display2_name(), add_names_new)
     } 
     if (isMappable(display3_sf())) { 
       display3 <- st_transform(display3_sf(), 4326)
@@ -1496,7 +1505,7 @@ server = function(input, output, session) {
       } else {
         showNotification("Unsupported geometry type", type = "error")
       }
-      group_names_new <- c(group_names_new,display3_name())
+      add_names_new <- c(display3_name(), add_names_new)
     } 
     
     if (!is.null(rast1())) { 
@@ -1508,7 +1517,7 @@ server = function(input, output, session) {
       pal <- colorNumeric(palette = viridis::viridis(256), domain = values_rast, na.color = "transparent")
       map1 <- map1 %>% addRasterImage(rast1,  colors = pal, opacity = 0.5, group=rast1_name(), options = leafletOptions(pane = "ground"))
       
-      group_names_new <- c(group_names_new, rast1_name())
+      add_names_new <- c(, rast1_name(), add_names_new)
     }
     
     if (!is.null(rast2())) { 
@@ -1520,16 +1529,16 @@ server = function(input, output, session) {
       pal <- colorNumeric(palette = colorRampPalette(c("#0000FF", "#FFFF00", "#FF0000"))(256), domain = values_rast, na.color = "transparent")
       map1 <- map1 %>% addRasterImage(rast2,  colors = pal, opacity = 0.5, group=rast2_name(), options = leafletOptions(pane = "ground"))
       
-      group_names_new <- c(group_names_new, rast2_name())
+      add_names_new <- c(rast2_name(), add_names_new)
     }
     leafletProxy("map1") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                       overlayGroups = c(rge_selected(), dist_names(), group_names_new),
+                       overlayGroups = c(rge_selected(), group_names_new, range_names(), dist_names(), add_names_new),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(group_names())
+      hideGroup(group_names(), range_names(), add_names_new)
     
-    group_names(group_names_new)
+    add_names(add_names_new)
   })  
   
   ##############################################################################
@@ -1595,17 +1604,18 @@ server = function(input, output, session) {
       map1 <- map1 %>% addPolygons(data=intact_sf, color='#336633', stroke=F, fillOpacity=0.5, group='Undisturbed areas', options = leafletOptions(pane = "top")) %>%
         addLayersControl(position = "topright",
                          baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                         overlayGroups = c(rge_selected(), group_names(), "Undisturbed areas", dist_names()),
+                         overlayGroups = c(rge_selected(), group_names(), range_names(), "Undisturbed areas", dist_names(), add_names()),
                          options = layersControlOptions(collapsed = FALSE)) %>%
-        hideGroup(c(footprint_names_new(), group_names()))
+        showGroup("Undisturbed areas") %>%
+        hideGroup(c(footprint_names_new(), group_names(), range_names(), add_names()))
     }  
     if (isMappable(fp_sf)) { 
       map1 <- map1 %>% addPolygons(data=fp_sf, color='black', stroke=F, fillOpacity=0.5, group=footprint_names_new(), options = leafletOptions(pane = "top")) %>%
         addLayersControl(position = "topright",
                          baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                         overlayGroups = c(rge_selected(), group_names(), "Undisturbed areas", footprint_names_new(), dist_names()),
+                         overlayGroups = c(rge_selected(), group_names(), range_names(), "Undisturbed areas",  footprint_names_new(), dist_names(), add_names()),
                          options = layersControlOptions(collapsed = FALSE)) %>%
-        hideGroup(c(footprint_names_new(), group_names()))
+        hideGroup(c(footprint_names_new(), group_names(), range_names(), add_names()))
     } 
     
    # Close the modal once processing is done
@@ -1656,7 +1666,7 @@ server = function(input, output, session) {
       other_polyvalue <- round(sum(st_area(other_polydist)) / 1e6, 1)
       other_polylabel <- "Other areal disturbances (km2)"
     }
-    
+    #browser()
     tibble(
       Attribute = c(
         "Linear disturbances (km)",
@@ -1670,15 +1680,15 @@ server = function(input, output, session) {
         "Intact FL 2020 (%)**"
       ),
       Value = c(
-        if (is.null(statslayers_rv$line)) 0 else as.numeric(round(st_length(st_union(statslayers_rv$line)) / 1000, 1)),
-        if (is.null(statslayers_rv$poly)) 0 else as.numeric(round(st_area(st_union(statslayers_rv$poly)) / 1000000, 1)),
+        if (is.null(statslayers_rv$line) || nrow(statslayers_rv$line) == 0) 0 else as.numeric(round(st_length(st_union(statslayers_rv$line)) / 1000, 1)),
+        if (is.null(statslayers_rv$poly) || nrow(statslayers_rv$poly) == 0) 0 else as.numeric(round(st_area(st_union(statslayers_rv$poly)) / 1000000, 1)),
         other_linevalue,
         other_polyvalue,
-        if (is.null(fires())) 0 else as.numeric(round(st_area(st_union(fires())) / aoi * 100, 1)),
-        if (is.null(mines_all())) 0 else as.numeric(round(st_area(st_union(mines_all())) / aoi * 100, 1)),
-        if (is.null(statslayers_rv$pa2021)) 0 else as.numeric(round(st_area(st_union(statslayers_rv$pa2021)) / aoi * 100, 1)),
-        if (is.null(statslayers_rv$ifl2000)) 0 else as.numeric(round(st_area(st_union(statslayers_rv$ifl2000)) / aoi * 100, 1)),
-        if (is.null(statslayers_rv$ifl2020)) 0 else as.numeric(round(st_area(st_union(statslayers_rv$ifl2020)) / aoi * 100, 1))
+        if (is.null(fires()) || nrow(fires())== 0) 0 else as.numeric(round(st_area(st_union(fires())) / aoi * 100, 1)),
+        if (is.null(mines_all()) || nrow(mines_all())== 0) 0 else as.numeric(round(st_area(st_union(mines_all())) / aoi * 100, 1)),
+        if (is.null(statslayers_rv$pa2021) || nrow(statslayers_rv$pa2021)== 0) 0 else as.numeric(round(st_area(st_union(statslayers_rv$pa2021)) / aoi * 100, 1)),
+        if (is.null(statslayers_rv$ifl2000) || nrow(statslayers_rv$ifl2000)== 0) 0 else as.numeric(round(st_area(st_union(statslayers_rv$ifl2000)) / aoi * 100, 1)),
+        if (is.null(statslayers_rv$ifl2020) || nrow(statslayers_rv$ifl2020)== 0) 0 else as.numeric(round(st_area(st_union(statslayers_rv$ifl2020)) / aoi * 100, 1))
       )
     )
   })  
