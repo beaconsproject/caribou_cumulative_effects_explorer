@@ -189,7 +189,11 @@ ui = dashboardPage(skin="black",
                        tabItem(tabName="select",
                                fluidRow(
                                  tabBox(id = "one", width="8",
-                                        tabPanel("Mapview", leafletOutput("map1", height=900) %>% withSpinner()),
+                                        tabPanel("Mapview", #leafletOutput("map1", height=900) %>% withSpinner()),
+                                                 div(leafletOutput("map1", height = 900) %>% withSpinner(),
+                                                   div("*A final determination of LFN IPCA boundaries continues to be informed by ongoing research, review, and consultation by LFN.", 
+                                                       style = "text-align:center; font-size:14px; margin-top:5px; color:gray;"))
+                                                 ),
                                         tabPanel("Custom buffers",
                                                  tags$h4("Define linear buffer sizes:"),
                                                  uiOutput("linear_matrix_ui"),
