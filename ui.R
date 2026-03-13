@@ -182,7 +182,7 @@ ui = dashboardPage(skin="black",
                                  absolutePanel(
                                    right = 0, top = 0, width = 250, height = "100%",
                                    style = "background-color: white; padding: 0;margin: 0;border: none; right: 0;overflow: hidden;z-index: 1000;",
-                                   tags$img(src = "intact.jpg",width = "100%", style = "display: block;")
+                                   tags$img(src = "caribou.jpg",width = "100%", style = "display: block;")
                                  )
                                )
                        ),
