@@ -1633,7 +1633,7 @@ server = function(input, output, session) {
     req(herd())
     aoi <- sum(st_area(studyarea()))
 
-    tibble(Attribute = paste0(rge_selected(), " (range km2)"), Value = as.numeric(round(aoi / 1000000, 0)))
+    tibble(Attribute = rge_selected(), Value = as.numeric(round(aoi / 1000000, 0)))
   })
 
   baseAttributes <- reactive({
