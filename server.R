@@ -706,6 +706,7 @@ server = function(input, output, session) {
       } else if (input$extraupload == "extragpkg"){
         req(input$display4)
         req(input$display4c)
+        
         if(input$display4c != "Select a layer"){
           gpkg_path <- file.path(tempdir(), paste0("uploaded_", input$display4$name))
           file.copy(input$display4$datapath, gpkg_path, overwrite = TRUE)
@@ -1443,7 +1444,7 @@ server = function(input, output, session) {
     leafletProxy("map1") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                       overlayGroups = c(rge_selected(), group_names(), range_names(), dist_names_new, add_names()),
+                       overlayGroups = c(group_names(), rge_selected(), "Annual range (YG)", range_names(), dist_names_new, add_names()),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       hideGroup(c(group_names(), range_names(), add_names()))
     
@@ -1530,12 +1531,13 @@ server = function(input, output, session) {
       
       add_names_new <- c(rast2_name(), add_names_new)
     }
+    browser()
     leafletProxy("map1") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                       overlayGroups = c(rge_selected(), group_names_new, range_names(), dist_names(), add_names_new),
+                       overlayGroups = c(group_names(), rge_selected(), "Annual range (YG)", range_names(), dist_names(), add_names_new),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(group_names(), range_names(), add_names_new)
+      hideGroup(c(group_names(), range_names(), add_names_new))
     
     add_names(add_names_new)
   })  
@@ -1603,7 +1605,7 @@ server = function(input, output, session) {
       map1 <- map1 %>% addPolygons(data=intact_sf, color='#336633', stroke=F, fillOpacity=0.5, group='Undisturbed areas', options = leafletOptions(pane = "top")) %>%
         addLayersControl(position = "topright",
                          baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                         overlayGroups = c(rge_selected(), group_names(), range_names(), "Undisturbed areas", dist_names(), add_names()),
+                         overlayGroups = c(group_names(), rge_selected(), "Annual range (YG)", range_names(), "Undisturbed areas", dist_names(), add_names()),
                          options = layersControlOptions(collapsed = FALSE)) %>%
         showGroup("Undisturbed areas") %>%
         hideGroup(c(footprint_names_new(), group_names(), range_names(), add_names()))
@@ -1612,7 +1614,7 @@ server = function(input, output, session) {
       map1 <- map1 %>% addPolygons(data=fp_sf, color='black', stroke=F, fillOpacity=0.5, group=footprint_names_new(), options = leafletOptions(pane = "top")) %>%
         addLayersControl(position = "topright",
                          baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                         overlayGroups = c(rge_selected(), group_names(), range_names(), "Undisturbed areas",  footprint_names_new(), dist_names(), add_names()),
+                         overlayGroups = c(group_names(), rge_selected(), "Annual range (YG)", range_names(), "Undisturbed areas",  footprint_names_new(), dist_names(), add_names()),
                          options = layersControlOptions(collapsed = FALSE)) %>%
         hideGroup(c(footprint_names_new(), group_names(), range_names(), add_names()))
     } 
