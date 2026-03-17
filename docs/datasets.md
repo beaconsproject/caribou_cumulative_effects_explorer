@@ -36,6 +36,11 @@ Each herd includes the following spatial datasets, where available or where the 
 - Intact FL 2020:  https://intactforests.org*
 <br><br>
 
+
+**Note:** The Little Rancheria herd additionally includes seasonal layers (summer range, winter range, fall high-use area, spring high-use area, ...)
+
+
+
 *References: Potapov, P., Hansen, M. C., Laestadius L., Turubanova S., Yaroshenko A., Thies C., Smith W., Zhuravleva I., Komarova A., Minnemeyer S., Esipova E. The last frontiers of wilderness: Tracking loss of intact forest landscapes from 2000 to 2013. Science Advances, 2017; 3:e1600821
 
 ### Optional user-provided datasets
@@ -57,4 +62,4 @@ only an overall buffer size can be applied to those disturbances.
 
 #### Additional display layers 
 
-Users can also add up to five additional layers for visualization: up to three as polygon, polyline, or point layers, and up to two as raster layers.
+Users can also add up to five additional layers for visualization: up to three polygon, polyline, or point layers (uploaded as GeoPackage or Shapefile), and up to two raster layers.
