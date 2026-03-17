@@ -531,7 +531,8 @@ server = function(input, output, session) {
         purrr::walk2(infile$datapath, outfiles, ~file.rename(.x, .y))
         layer <- sf::st_read(file.path(dir,paste0(name, ".shp")), quiet = TRUE) %>% 
           dplyr::select(-any_of("fid")) %>%
-          st_intersection(studyarea())
+          sf::st_transform(st_crs(studyarea())) %>%
+          sf::st_intersection(studyarea())
         
         # Handle cases where 'geometry' might not be named correctly
         if (!"geometry" %in% names(layer) && "geom" %in% names(layer)) {
@@ -540,8 +541,7 @@ server = function(input, output, session) {
         
         layer <- layer %>%
           sf::st_set_geometry("geometry") %>%
-          sf::st_zm(drop = TRUE, what = "ZM") %>%
-          sf::st_transform(st_crs(studyarea()))
+          sf::st_zm(drop = TRUE, what = "ZM") 
       }
     }
     return(layer)
@@ -572,6 +572,7 @@ server = function(input, output, session) {
         purrr::walk2(infile$datapath, outfiles, ~file.rename(.x, .y))
         layer <- sf::st_read(file.path(dir,paste0(name, ".shp")), quiet = TRUE) %>% 
           dplyr::select(-any_of("fid")) %>%
+          sf::st_transform(st_crs(studyarea())) %>%
           st_intersection(studyarea())
         
         # Handle cases where 'geometry' might not be named correctly
@@ -581,8 +582,7 @@ server = function(input, output, session) {
         
         layer <- layer %>%
           sf::st_set_geometry("geometry") %>%
-          sf::st_zm(drop = TRUE, what = "ZM") %>%
-          sf::st_transform(st_crs(studyarea()))
+          sf::st_zm(drop = TRUE, what = "ZM") 
       }
     }
     
@@ -622,6 +622,7 @@ server = function(input, output, session) {
       } else if (input$extraupload == "extragpkg"){
         req(input$display4)
         req(input$display4a)
+        
         if(input$display4a != "Select a layer"){
           gpkg_path <- file.path(tempdir(), paste0("uploaded_", input$display4$name))
           file.copy(input$display4$datapath, gpkg_path, overwrite = TRUE)
@@ -1658,16 +1659,16 @@ server = function(input, output, session) {
     
     # If the user uploaded a shapefile via `other_dist()`
     if (!is.null(other_linedist())) {
-      other_linedis <- other_linedist() %>% st_union()
-      other_linevalue <- round(sum(st_length(other_linedist)) / 1000, 1)
+      other_linedist <- other_linedist() %>% st_union()
+      other_linevalue <- round(st_length(other_linedist) / 1000, 1)
       other_linelabel <- "Other linear disturbances (km)"
     }
     if (!is.null(other_polydist())) {
       other_polydist <- other_polydist() %>% st_union()
-      other_polyvalue <- round(sum(st_area(other_polydist)) / 1e6, 1)
+      other_polyvalue <- round(st_area(other_polydist) / 1e6, 1)
       other_polylabel <- "Other areal disturbances (km2)"
     }
-    #browser()
+    
     tibble(
       Attribute = c(
         "Linear disturbances (km)",
