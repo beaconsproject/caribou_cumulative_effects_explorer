@@ -1205,7 +1205,7 @@ server = function(input, output, session) {
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c("Kaska Dene Traditional Territory", "LFN IPCA planning area", "Proposed IPCAs", "Caribou herds"),
                    options = layersControlOptions(collapsed = FALSE))%>%
-      hideGroup(c("LFN IPCA planning area", "LFN IPCA planning areas","Proposed IPCAs"))
+      hideGroup(c("LFN IPCA planning area", "Proposed IPCAs"))
   })
   
   observeEvent(input$confHerd,{
@@ -1269,9 +1269,6 @@ server = function(input, output, session) {
       leafletProxy("map1") %>% addPolygons(data=kde_summer, fillColor = '#FF3366', fill=T, opacity= 0.5,  weight=0, group="Summer", options = leafletOptions(pane = "top")) 
       leafletProxy("map1") %>% addPolygons(data=spring_high_use_areas, fillColor = '#669999', fill=T, opacity= 1,  weight=0, group="Spring high use areas", options = leafletOptions(pane = "top")) 
       leafletProxy("map1") %>% addPolygons(data=spring_main_corridor, fillColor = '#CC9900', fill=T, opacity= 1,  weight=0, group="Spring main corridor", options = leafletOptions(pane = "top")) 
-      leafletProxy("map1") %>% addCircleMarkers(data = critical_occ, radius = 1, color = "#8B7D6B", fillOpacity = 1, group = "Critical mineral occurrences")
-      #leafletProxy("map1") %>% addCircleMarkers(data = mine_occ, radius = 1, color = "#FFD700", fillOpacity = 1, group = "Mineral occurences") %>%
-      leafletProxy("map1") %>% addCircleMarkers(data = priority_occ, radius = 1, color = "#EE6363", fillOpacity = 1, group = "Priority critical mineral occurrences")
         
       group_names_new <- c(group_names())
       range_names_new <- c(range_names(), "Fall high use areas","Fall main corridor", "Annual range", "Late winter", "Early winter", "Fall rut", "Summer", "Spring high use areas","Spring main corridor")
@@ -1283,7 +1280,11 @@ server = function(input, output, session) {
     leafletProxy("map1") %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
       addPolygons(data=sa, color='#663399', fill=F, opacity = 1, weight=3, group=rge_selected(), options = leafletOptions(pane = "top")) %>%
+      addCircleMarkers(data = critical_occ, radius = 1, color = "#8B7D6B", fillOpacity = 1, group = "Critical mineral occurrences") %>%
+      #addCircleMarkers(data = mine_occ, radius = 1, color = "#FFD700", fillOpacity = 1, group = "Mineral occurences") %>%
+      addCircleMarkers(data = priority_occ, radius = 1, color = "#EE6363", fillOpacity = 1, group = "Priority critical mineral occurrences") %>%
       showGroup(rge_selected())
+    
     range_names_new <- setdiff(range_names_new, rge_selected())
     
     #Mining
@@ -1366,9 +1367,9 @@ server = function(input, output, session) {
     leafletProxy("map1") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                       overlayGroups = c("Annual range (YG)", rge_selected(), group_names_new, range_names_new, dist_names_new, add_names_new),
+                       overlayGroups = c(group_names_new, rge_selected(), "Annual range (YG)", rge_selected(), range_names_new, dist_names_new, add_names_new),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c(group_names(), range_names_new, "Fires", add_names_new))
+      hideGroup(c(group_names(), range_names_new, add_names_new, "Critical mineral occurrences", "Priority critical mineral occurrences"))
       
     # Close the modal once processing is done
     dist_names(dist_names_new)
