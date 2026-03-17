@@ -1178,7 +1178,7 @@ server = function(input, output, session) {
   # View initial set of maps
   ##############################################################################
   output$map1 <- renderLeaflet({
-    map_bounds1 <- IPCA_PL %>% st_bbox() %>% as.character()
+    map_bounds1 <- caribouherds %>% st_bbox() %>% as.character()
     
     herd_pal <- colorFactor(palette = c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928'), domain = caribouherds$HERD)
     #label_points <- st_point_on_surface(proposed_ipcas)
