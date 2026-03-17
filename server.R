@@ -1517,7 +1517,7 @@ server = function(input, output, session) {
       pal <- colorNumeric(palette = viridis::viridis(256), domain = values_rast, na.color = "transparent")
       map1 <- map1 %>% addRasterImage(rast1,  colors = pal, opacity = 0.5, group=rast1_name(), options = leafletOptions(pane = "ground"))
       
-      add_names_new <- c(, rast1_name(), add_names_new)
+      add_names_new <- c(rast1_name(), add_names_new)
     }
     
     if (!is.null(rast2())) { 
@@ -1531,7 +1531,7 @@ server = function(input, output, session) {
       
       add_names_new <- c(rast2_name(), add_names_new)
     }
-    browser()
+    
     leafletProxy("map1") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
@@ -1633,7 +1633,7 @@ server = function(input, output, session) {
     req(herd())
     aoi <- sum(st_area(studyarea()))
 
-    tibble(Attribute = rge_selected(), Value = as.numeric(round(aoi / 1000000, 0)))
+    tibble(Attribute = paste0(rge_selected(), " (km2)"), Value = as.numeric(round(aoi / 1000000, 0)))
   })
 
   baseAttributes <- reactive({
