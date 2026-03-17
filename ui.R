@@ -192,7 +192,7 @@ ui = dashboardPage(skin="black",
                                         tabPanel("Mapview", #leafletOutput("map1", height=900) %>% withSpinner()),
                                                  div(leafletOutput("map1", height = 900) %>% withSpinner(),
                                                    div("*A final determination of LFN IPCA boundaries continues to be informed by ongoing research, review, and consultation by LFN.", 
-                                                       style = "text-align:center; font-size:14px; margin-top:5px; color:gray;"))
+                                                       style = "text-align:center; font-size:16px; font-weight: bold; margin-top:5px; color:gray;"))
                                                  ),
                                         tabPanel("Custom buffers",
                                                  tags$h4("Define linear buffer sizes:"),

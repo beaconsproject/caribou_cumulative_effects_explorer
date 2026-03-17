@@ -31,7 +31,7 @@ server = function(input, output, session) {
   herd_range <- reactiveVal(c())
   rge_selected <- reactiveVal(c())
   rge_clear <- reactiveVal(c())
-  group_names <- reactiveVal(c("Kaska Dene Traditional Territory","LFN IPCA planning area",  "Proposed IPCAs", "Caribou herds"))
+  group_names <- reactiveVal(c("Kaska Dene Traditional Territory","LFN IPCA planning area",  "Proposed IPCAs*", "Caribou herds"))
   dist_names <- reactiveVal(c("Critical mineral occurrences", "Priority critical mineral occurrences"))
   range_names <-reactiveVal(c())
   add_names <-  reactiveVal(c())
@@ -1181,12 +1181,9 @@ server = function(input, output, session) {
     map_bounds1 <- caribouherds %>% st_bbox() %>% as.character()
     
     herd_pal <- colorFactor(palette = c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928'), domain = caribouherds$HERD)
-    #label_points <- st_point_on_surface(proposed_ipcas)
-    #label_points$layer <- c("Little Rancheria", "Dene K'éh Kusān", "Ross River MOU IPCA Study Area","Toobally", "Tū Chō")
     proposed_ipcas$ipca_name <- c("Little Rancheria", "Dene K'éh Kusān", "Ross River MOU IPCA Study Area","Toobally", "Tū Chō")
     
     leaflet(options = leafletOptions(attributionControl=FALSE)) %>%
-      #fitBounds(lng1 = -121, lat1 = 44, lng2 = -65, lat2 = 78) %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
       addMapPane(name = "ground", zIndex=380) %>%
       addMapPane(name = "top", zIndex=420) %>%
@@ -1198,14 +1195,14 @@ server = function(input, output, session) {
       addPolylines(data=rivers, color='#97FFFF', opacity = 1, weight=2, group="Rivers", options = leafletOptions(pane = "ground")) %>%
       addPolygons(data=IPCA_PL, color='black', fill=F,  opacity = 1, weight=2, group="LFN IPCA planning area", options = leafletOptions(pane = "ground")) %>%
       addPolygons(data=kdtt, color='red', fill=F, weight=2, group="Kaska Dene Traditional Territory", options = leafletOptions(pane = "ground")) %>%
-      addPolygons(data=proposed_ipcas, color = 'black', fill = T, fillOpacity = 0.2, weight=1, layerId = proposed_ipcas$ipca_name, popup = ~ipca_name, group="Proposed IPCAs", options = leafletOptions(pane = "ground")) %>%
-      #addLabelOnlyMarkers(data = label_points, label = ~layer, labelOptions = labelOptions(noHide = TRUE, direction = "center", textOnly = TRUE, style = list("font-weight"="bold","font-size"="12px","color"="black")), group = "Proposed IPCAs") %>%
+      addPolygons(data=proposed_ipcas, color = 'black', fill = T, fillOpacity = 0.2, weight=1, layerId = proposed_ipcas$ipca_name, popup = ~ipca_name, group="Proposed IPCAs*", options = leafletOptions(pane = "ground")) %>%
+      #addLabelOnlyMarkers(data = label_points, label = ~layer, labelOptions = labelOptions(noHide = TRUE, direction = "center", textOnly = TRUE, style = list("font-weight"="bold","font-size"="12px","color"="black")), group = "Proposed IPCAs*") %>%
       addPolygons(data=caribouherds, color=~herd_pal(HERD), fillColor = ~herd_pal(HERD), fillOpacity = 0.6, weight=3, layerId = caribouherds$HERD, popup = ~HERD, group="Caribou herds", options = leafletOptions(pane = "top")) %>% 
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
-                       overlayGroups = c("Kaska Dene Traditional Territory", "LFN IPCA planning area", "Proposed IPCAs", "Caribou herds"),
+                       overlayGroups = c("Kaska Dene Traditional Territory", "LFN IPCA planning area", "Proposed IPCAs*", "Caribou herds"),
                    options = layersControlOptions(collapsed = FALSE))%>%
-      hideGroup(c("LFN IPCA planning area", "Proposed IPCAs"))
+      hideGroup(c("LFN IPCA planning area", "Proposed IPCAs*"))
   })
   
   observeEvent(input$confHerd,{
