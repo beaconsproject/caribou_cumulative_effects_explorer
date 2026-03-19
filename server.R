@@ -1,6 +1,9 @@
 server = function(input, output, session) {
   
-  
+  shinyjs::disable("downloadData")
+  shinyjs::disable("confClassify")
+  shinyjs::disable("confUpload")
+  shinyjs::disable("confExtra")
   ################################################################################################
   # RELOAD
   observeEvent(input$reload_btn, {
@@ -506,6 +509,12 @@ server = function(input, output, session) {
   ##############################################################################
   # Read input data - OTHERS
   ##############################################################################
+  observe({
+    if(!is.null(other_linedist()) || !is.null(other_polydist())){
+      shinyjs::enable("confUpload")
+    } 
+  })
+  
   other_linedist <- reactive({
     layer <- NULL
     if(!is.null(input$upload_lineothers)){
@@ -534,14 +543,24 @@ server = function(input, output, session) {
           sf::st_transform(st_crs(studyarea())) %>%
           sf::st_intersection(studyarea())
         
-        # Handle cases where 'geometry' might not be named correctly
-        if (!"geometry" %in% names(layer) && "geom" %in% names(layer)) {
-          layer$geometry <- layer$geom
+        if(nrow(layer)==0){
+          showModal(modalDialog(
+            title = "Other linear disturbances selected do not fall within the chosen herd range.",
+            "The layer won't be uploaded",
+            easyClose = FALSE,
+            footer = modalButton("OK")
+          ))
+          layer <-NULL
+        }else{
+          # Handle cases where 'geometry' might not be named correctly
+          if (!"geometry" %in% names(layer) && "geom" %in% names(layer)) {
+            layer$geometry <- layer$geom
+          }
+          
+          layer <- layer %>%
+            sf::st_set_geometry("geometry") %>%
+            sf::st_zm(drop = TRUE, what = "ZM")
         }
-        
-        layer <- layer %>%
-          sf::st_set_geometry("geometry") %>%
-          sf::st_zm(drop = TRUE, what = "ZM") 
       }
     }
     return(layer)
@@ -575,23 +594,37 @@ server = function(input, output, session) {
           sf::st_transform(st_crs(studyarea())) %>%
           st_intersection(studyarea())
         
-        # Handle cases where 'geometry' might not be named correctly
-        if (!"geometry" %in% names(layer) && "geom" %in% names(layer)) {
-          layer$geometry <- layer$geom
+        if(nrow(layer)==0){
+          showModal(modalDialog(
+            title = "Other areal disturbances selected do not fall within the chosen herd range.",
+            "The layer won't be uploaded",
+            easyClose = FALSE,
+            footer = modalButton("OK")
+          ))
+          layer <-NULL
+        }else{
+          # Handle cases where 'geometry' might not be named correctly
+          if (!"geometry" %in% names(layer) && "geom" %in% names(layer)) {
+            layer$geometry <- layer$geom
+          }
+          
+          layer <- layer %>%
+            sf::st_set_geometry("geometry") %>%
+            sf::st_zm(drop = TRUE, what = "ZM")
         }
-        
-        layer <- layer %>%
-          sf::st_set_geometry("geometry") %>%
-          sf::st_zm(drop = TRUE, what = "ZM") 
       }
     }
-    
     return(layer)
   })
   
   ################################################################################################
   ## extra layers
   ################################################################################################
+  observe({
+    if(!is.null(input$display1) || !is.null(input$display2) || !is.null(input$display3) || !is.null(input$rast1) || !is.null(input$rast2)){
+      shinyjs::enable("confExtra")
+    } 
+  })
   # Display1
   display1_sf <- reactive({
     i <- NULL
@@ -753,6 +786,14 @@ server = function(input, output, session) {
   ################################################################################################
   # Render UI for the selection of column name for disturbances 
   ################################################################################################
+  observe({
+    if(input$createMatrix){
+      shinyjs::enable("confClassify")
+    } else{
+      shinyjs::disable("confClassify")
+    }
+  })
+  
   output$lineIndustryUI <- renderUI({
     req(input$createMatrix == TRUE)
     
@@ -1549,6 +1590,7 @@ server = function(input, output, session) {
   observeEvent(input$goButton,{
     
     shinyjs::show("save_stats")
+    shinyjs::enable("downloadData")
     
     if(input$confHerd[1]==0){
       showModal(modalDialog(
@@ -1850,7 +1892,16 @@ server = function(input, output, session) {
   output$downloadData <- downloadHandler(
     filename = function() { paste("Caribou_CE_disturbance_explorer-", Sys.Date(), ".gpkg", sep="") },
     content = function(file) {
-      
+      if(input$goButton ==0){
+        showModal(modalDialog(
+          title = "Missing disturbed and undisturbed layers.",
+          "You need to run the disturbance analysis prior to download the data. ",
+          easyClose = TRUE,
+          footer = NULL)
+        ) 
+        return()
+      }
+      req(input$goButton ==0)
       x <- data.frame(Area_km2 = aoiAttributes()[1,2],
                       Lineardist_km  = baseAttributes()[1,2],
                       Arealdist_km2 = baseAttributes()[2,2],
