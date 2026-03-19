@@ -54,7 +54,7 @@ by the app and cannot be modified.
     
   - Download a GeoPackage of the **undisturbed areas** and **disturbed areas** created by the app, as well as the input spatial layers (e.g., linear and areal disturbances).
   
-### Disturbance Explorer workflow diagram
+### Caribou Cumulative Effects Disturbance Explorer workflow diagram
 
 The worflow diagram below provides an overview of the process.
 
