@@ -91,7 +91,7 @@ ui = dashboardPage(skin="black",
                        radioButtons("extraupload", "Select source for vector layers to be displayed:",
                                     choices = list("Shapefile" = "extrashp", 
                                                    "GeoPackage" = "extragpkg"),
-                                    selected = character(0), 
+                                    selected = "extrashp", 
                                     inline = TRUE),
                        conditionalPanel(
                          condition = "input.tabs=='addLayers' && input.extraupload == 'extrashp'",
@@ -120,10 +120,8 @@ ui = dashboardPage(skin="black",
                      ),
                      conditionalPanel(
                        condition = "input.tabs == 'addLayers'",
-                       br(),
                        hr(),
-                       br(),
-                       actionButton("confExtra", "Confirm", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px")
+                       actionButton("confExtra", "Confirm display elements", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px")
                      ),
                      conditionalPanel(
                        condition = "input.tabs == 'buffer'",
