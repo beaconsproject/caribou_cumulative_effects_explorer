@@ -27,8 +27,8 @@ Each herd includes the following spatial datasets, where available or where the 
 - Fires: https://cwfis.cfs.nrcan.gc.ca/datamart
 - Linear disturbance – e.g., roads, seismic lines: https://map-data.service.yukon.ca/geoyukon/Environmental_Monitoring/Surface_Disturbance_Linear_Features/
 - Areal disturbance – e.g., cutblocks, mines: https://map-data.service.yukon.ca/geoyukon/Environmental_Monitoring/Surface_Disturbance_Areal_Features/
-- Priority critical mineral occurrences -
-- Critical mineral occurrences -
+- Critical mineral occurrences - Identifies 31 critical minerals: https://map-data.service.yukon.ca/GeoYukon/Geological/Mineral_Occurrences_250k/
+- Priority critical mineral occurrences - Identifies the six priority minerals (lithium, graphite, nickel, cobalt, copper, and rare earth elements): https://map-data.service.yukon.ca/GeoYukon/Geological/Mineral_Occurrences_250k/
 - Quartz claims: https://map-data.service.yukon.ca/geoyukon/Mining/Quartz_Claims_50k/
 - Placer claims: https://map-data.service.yukon.ca/geoyukon/Mining/Placer_Claims_50k/
 - Protected areas: https://open.canada.ca/data/en/dataset/6c343726-1e92-451a-876a-76e17d398a1c
