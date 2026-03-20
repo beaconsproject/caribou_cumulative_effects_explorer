@@ -338,13 +338,6 @@ server = function(input, output, session) {
     
     shinyjs::hide("save_stats")
 
-    # create switch to clip
-    if (input$selectInput =="Little Rancheria"){
-      stat_switch <- TRUE
-    }else{
-      stat_switch <- FALSE
-    }
-    
     if ("linear_disturbance" %in% lyr_names()) {
       line_sf <- st_read(herd(), "linear_disturbance", quiet = TRUE)
       layers_rv$line <- line_sf
@@ -406,90 +399,89 @@ server = function(input, output, session) {
       statslayers_rv$herds <- la
     }
     
-    if(stat_switch){
-      if ("linear_disturbance" %in% lyr_names()) {
-        line_sf <- st_read(herd(), "linear_disturbance", quiet = TRUE) %>%
-          st_intersection(studyarea()) %>%
-          st_make_valid() %>%
-          st_collection_extract("LINESTRING") %>%
-          st_cast("MULTILINESTRING")
-        statslayers_rv$line <- line_sf
-      } 
-      if ("areal_disturbance" %in% lyr_names()) {
-        poly_sf <- st_read(herd(), "areal_disturbance", quiet = TRUE) %>%
-          st_intersection(studyarea()) %>%
-          st_make_valid() %>%
-          st_collection_extract("POLYGON") %>%
-          st_cast("MULTIPOLYGON")
-        statslayers_rv$poly <- poly_sf
-      }
-      if ("fires" %in% lyr_names()) {
-        fi <-st_read(herd(), 'fires', quiet = TRUE) %>% 
-          st_intersection(studyarea()) %>%
-          suppressWarnings() %>%
-          st_cast('MULTIPOLYGON') %>% 
-          st_zm(drop = TRUE, what = "ZM")  %>%
-          st_make_valid() %>%
-          mutate(area_ha = as.numeric(st_area(geom)/10000))
-        if(nrow(fi)>0){
-          #addGroup("Fires")
-          statslayers_rv$fire_sf <- fi
-        }
-      }
-      if ("Intact_FL_2000" %in% lyr_names()) {
-        la <-st_read(herd(), 'Intact_FL_2000', quiet = TRUE) %>% 
-          st_intersection(studyarea())
-        if(nrow(la)>0){
-          #addGroup("Intact FL 2000")
-          statslayers_rv$ifl2000 <- la
-        }
-      }
-      if ("Intact_FL_2020" %in% lyr_names()) {
-        la <-st_read(herd(), 'Intact_FL_2020', quiet = TRUE) %>% 
-          st_intersection(studyarea())
-        if(nrow(la)>0){
-          #addGroup("Intact FL 2020")
-          statslayers_rv$ifl2020 <- la
-        }
-      }
-      if ("protected_areas" %in% lyr_names()) {
-        la <-st_read(herd(), 'protected_areas', quiet = TRUE) %>% 
-          st_intersection(studyarea())
-        if(nrow(la)>0){
-          #addGroup("Protected areas")
-          statslayers_rv$pa2021 <- la
-        }
-      }
-      if ("Caribou_Herds" %in% lyr_names()) {
-        la <-st_read(herd(), 'Caribou_Herds', quiet = TRUE)
-        #addGroup("Caribou Herds")
-        statslayers_rv$herds <- la
-      }
-      if ("Placer_Claims" %in% lyr_names()) {
-        la <-st_read(herd(), 'Placer_Claims', quiet = TRUE) %>% 
-          st_intersection(studyarea())
-        if(nrow(la)>0){
-          #addGroup("Placer Claims")
-          statslayers_rv$placers <- la
-        }
-      }
-      if ("Quartz_Claims" %in% lyr_names()) {
-        la <-st_read(herd(), 'Quartz_Claims', quiet = TRUE) %>% 
-          st_intersection(studyarea())
-        if(nrow(la)>0){
-          #addGroup("Quartz Claims")
-          statslayers_rv$quartz <- la
-        }
-      }
-      if ("Mining_Claims" %in% lyr_names()) {
-        la <-st_read(herd(), 'Mining_Claims', quiet = TRUE) %>% 
-          st_intersection(studyarea())
-        if(nrow(la)>0){
-          #addGroup("Mining Claims")
-          statslayers_rv$mines <- la
-        }
-      } 
+    if ("linear_disturbance" %in% lyr_names()) {
+      line_sf <- st_read(herd(), "linear_disturbance", quiet = TRUE) %>%
+        st_intersection(studyarea()) %>%
+        st_make_valid() %>%
+        st_collection_extract("LINESTRING") %>%
+        st_cast("MULTILINESTRING")
+      statslayers_rv$line <- line_sf
     } 
+    if ("areal_disturbance" %in% lyr_names()) {
+      poly_sf <- st_read(herd(), "areal_disturbance", quiet = TRUE) %>%
+        st_intersection(studyarea()) %>%
+        st_make_valid() %>%
+        st_collection_extract("POLYGON") %>%
+        st_cast("MULTIPOLYGON")
+      statslayers_rv$poly <- poly_sf
+    }
+    if ("fires" %in% lyr_names()) {
+      fi <-st_read(herd(), 'fires', quiet = TRUE) %>% 
+        st_intersection(studyarea()) %>%
+        suppressWarnings() %>%
+        st_cast('MULTIPOLYGON') %>% 
+        st_zm(drop = TRUE, what = "ZM")  %>%
+        st_make_valid() %>%
+        mutate(area_ha = as.numeric(st_area(geom)/10000))
+      if(nrow(fi)>0){
+        #addGroup("Fires")
+        statslayers_rv$fire_sf <- fi
+      }
+    }
+    if ("Intact_FL_2000" %in% lyr_names()) {
+      la <-st_read(herd(), 'Intact_FL_2000', quiet = TRUE) %>% 
+        st_intersection(studyarea())
+      if(nrow(la)>0){
+        #addGroup("Intact FL 2000")
+        statslayers_rv$ifl2000 <- la
+      }
+    }
+    if ("Intact_FL_2020" %in% lyr_names()) {
+      la <-st_read(herd(), 'Intact_FL_2020', quiet = TRUE) %>% 
+        st_intersection(studyarea())
+      if(nrow(la)>0){
+        #addGroup("Intact FL 2020")
+        statslayers_rv$ifl2020 <- la
+      }
+    }
+    if ("protected_areas" %in% lyr_names()) {
+      la <-st_read(herd(), 'protected_areas', quiet = TRUE) %>% 
+        st_intersection(studyarea())
+      if(nrow(la)>0){
+        #addGroup("Protected areas")
+        statslayers_rv$pa2021 <- la
+      }
+    }
+    if ("Caribou_Herds" %in% lyr_names()) {
+      la <-st_read(herd(), 'Caribou_Herds', quiet = TRUE)
+      #addGroup("Caribou Herds")
+      statslayers_rv$herds <- la
+    }
+    if ("Placer_Claims" %in% lyr_names()) {
+      la <-st_read(herd(), 'Placer_Claims', quiet = TRUE) %>% 
+        st_intersection(studyarea())
+      if(nrow(la)>0){
+        #addGroup("Placer Claims")
+        statslayers_rv$placers <- la
+      }
+    }
+    if ("Quartz_Claims" %in% lyr_names()) {
+      la <-st_read(herd(), 'Quartz_Claims', quiet = TRUE) %>% 
+        st_intersection(studyarea())
+      if(nrow(la)>0){
+        #addGroup("Quartz Claims")
+        statslayers_rv$quartz <- la
+      }
+    }
+    if ("Mining_Claims" %in% lyr_names()) {
+      la <-st_read(herd(), 'Mining_Claims', quiet = TRUE) %>% 
+        st_intersection(studyarea())
+      if(nrow(la)>0){
+        #addGroup("Mining Claims")
+        statslayers_rv$mines <- la
+      }
+    }   
+ #   } 
     
   })
 
@@ -1372,9 +1364,9 @@ server = function(input, output, session) {
         fires <- st_transform(fires, 4326)
         
         fires$CAUSE_LABEL <- dplyr::case_when(
-          fires$CAUSE == "L" ~ "Lightning",
-          fires$CAUSE == "H" ~ "Human",
-          is.na(fires$CAUSE) | fires$CAUSE == "" ~ "Unknown",
+          fires$CAUSE == "Natural" ~ "Lightning",
+          fires$CAUSE == "Human" ~ "Human",
+          is.na(fires$CAUSE) | fires$CAUSE == "Undetermined" ~ "Unknown",
           TRUE ~ "Unknown"  # Catch any other unexpected cases
         )
         pal <- colorFactor(
