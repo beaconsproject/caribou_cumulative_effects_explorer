@@ -1892,6 +1892,7 @@ server = function(input, output, session) {
   output$downloadData <- downloadHandler(
     filename = function() { paste("Caribou_CE_disturbance_explorer-", Sys.Date(), ".gpkg", sep="") },
     content = function(file) {
+      
       if(input$goButton ==0){
         showModal(modalDialog(
           title = "Missing disturbed and undisturbed layers.",
@@ -1901,7 +1902,7 @@ server = function(input, output, session) {
         ) 
         return()
       }
-      req(input$goButton ==0)
+      req(input$goButton >0)
       x <- data.frame(Area_km2 = aoiAttributes()[1,2],
                       Lineardist_km  = baseAttributes()[1,2],
                       Arealdist_km2 = baseAttributes()[2,2],
