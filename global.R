@@ -28,7 +28,7 @@ library(utils)
 
 
 caribouherds <- st_read("www/CaribouHerds.shp") %>% st_transform(4326)
-caribou_list <- c("Little Rancheria", "Coal River", "Finlayson", "Horseranch", "Labiche", "Pelly", "Redstone", "South Nahanni", "Tay River", "Wolf Lake")
+caribou_list <- c("Little Rancheria", "Coal River", "Finlayson", "Horseranch", "Labiche", "Liard Plateau","Pelly", "Redstone", "South Nahanni", "Swan Lake","Tay River", "Wolf Lake")
 
 rge_list <- c("Fall high use areas", "Fall main corridor", "Annual range","Early winter","Late winter", "Fall rut", "Summer", "Spring high use areas", "Spring main corridor")
 

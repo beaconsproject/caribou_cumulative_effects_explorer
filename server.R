@@ -105,6 +105,8 @@ server = function(input, output, session) {
       file <- 'www/horseranch.gpkg'
     } else if (input$selectInput == 'Labiche') {
       file <- 'www/labiche.gpkg'
+    } else if (input$selectInput == 'Liard Plateau') {
+      file <- 'www/liardplateau.gpkg'
     } else if (input$selectInput == 'Pelly') {
       file <- 'www/pelly.gpkg'
     } else if (input$selectInput == 'Redstone') {
@@ -113,6 +115,8 @@ server = function(input, output, session) {
       file <- 'www/southnahanni.gpkg'
     } else if (input$selectInput == 'Tay River') {
       file <- 'www/tayriver.gpkg'
+    } else if (input$selectInput == 'Swan Lake') {
+      file <- 'www/swanlake.gpkg'
     } else if (input$selectInput == 'Wolf Lake') {
       file <- 'www/wolflake.gpkg'
     } else {
@@ -1839,11 +1843,12 @@ server = function(input, output, session) {
     
     # include_others
     if(input$includeOthers){
-      if(is.null(upload_lineothers()) && is.null(upload_polyothers())){
+    
+      if(is.null(other_linedist()) && is.null(other_polydist())){
         all_wide$set_includeOthers <- "FALSE"
-      } else if (is.null(upload_lineothers()) && !is.null(upload_polyothers())){
+      } else if (is.null(other_linedist()) && !is.null(other_polydist())){
         all_wide$set_includeOthers <- paste0("TRUE_otherline0_otherpoly", as.character(input$otherpolysize))
-      } else if (!is.null(upload_lineothers()) && is.null(upload_polyothers())){
+      } else if (!is.null(other_linedist()) && is.null(other_polydist())){
         all_wide$set_includeOthers <- paste0("TRUE_otherline", as.character(input$otherlinesize),"_otherpoly0")
       } else{
         all_wide$set_includeOthers <- paste0("TRUE_otherline", as.character(input$otherlinesize),"_otherpoly", as.character(input$otherpolysize))
