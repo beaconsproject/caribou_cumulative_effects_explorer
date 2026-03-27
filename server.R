@@ -75,21 +75,6 @@ server = function(input, output, session) {
                               mines = NULL,
                               fire_sf = NULL)
   
-
-  addGroup <- function(new_group) {
-    current_groups <- group_names()  # Retrieve the current value
-    if (!(new_group %in% current_groups)) {  # Check if the group is not already in the vector
-      updated_groups <- c(current_groups, new_group)  # Append the new group
-      group_names(updated_groups)  # Update the reactiveVal
-    }
-  }
-  
-  removeGroup <- function(group_to_remove) {
-    current_groups <- group_names()  # Retrieve the current value
-    updated_groups <- current_groups[current_groups != group_to_remove]  # Filter out the specified group
-    group_names(updated_groups)  # Update the reactiveVal
-  }
-  
   ##############################################################################
   # Observe on layers names in gpkg
   lyr_names <- reactive({
@@ -617,7 +602,17 @@ server = function(input, output, session) {
   ## extra layers
   ################################################################################################
   observe({
-    if(!is.null(input$display1) || !is.null(input$display2) || !is.null(input$display3) || !is.null(input$rast1) || !is.null(input$rast2)){
+    cond_display <- !is.null(input$display1) ||
+      !is.null(input$display2) ||
+      !is.null(input$display3)
+    
+    cond_layers <- (input$display4a != "" && input$display4a != "Select a layer") ||
+      (input$display4b != "" && input$display4b != "Select a layer") ||
+      (input$display4c != "" && input$display4c != "Select a layer")
+    
+    cond_rast <- !is.null(input$rast1) || !is.null(input$rast2)
+    
+    if (cond_display || cond_layers || cond_rast) {
       shinyjs::enable("confExtra")
     } 
   })
@@ -632,6 +627,7 @@ server = function(input, output, session) {
         if(!is.null(input$display1)){
           req(input$display1)
           i <- read_shp_from_upload(input$display1) %>%
+            dplyr::select(-any_of("fid")) %>%
             st_zm(drop = TRUE, what = "ZM")  %>%
             st_make_valid()
           
@@ -675,6 +671,7 @@ server = function(input, output, session) {
         if(!is.null(input$display2)){
           req(input$display2)
           i <- read_shp_from_upload(input$display2) %>%
+            dplyr::select(-any_of("fid")) %>%
             st_zm(drop = TRUE, what = "ZM")  %>%
             st_make_valid()
           
@@ -717,6 +714,7 @@ server = function(input, output, session) {
         if(!is.null(input$display3)){
           req(input$display3)
           i <- read_shp_from_upload(input$display3) %>%
+            dplyr::select(-any_of("fid")) %>%
             st_zm(drop = TRUE, what = "ZM")  %>%
             st_make_valid()
           
