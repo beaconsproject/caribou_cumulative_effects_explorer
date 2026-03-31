@@ -75,6 +75,26 @@ server = function(input, output, session) {
                               mines = NULL,
                               fire_sf = NULL)
   
+  ################################################################################################
+  # Control on tabs
+  ################################################################################################
+  # Observe tab changes
+  observeEvent(input$tabs, {
+    
+    if (input$tabs != "select" && is.null(herd()) &&input$tabs != "overview") {
+      # Show modal message if tabUpload has not been visited
+      showModal(modalDialog(
+        title = "Action Required",
+        "Please visit the 'Select caribou herd' tab to initialize the map and upload the required dataset before proceeding to the next steps.",
+        easyClose = TRUE,
+        footer = modalButton("Select caribou herd")
+      ))
+      
+      # Redirect user back to tabUpload
+      updateTabItems(session = getDefaultReactiveDomain(), "tabs", "select")
+    }
+  })
+  
   ##############################################################################
   # Observe on layers names in gpkg
   lyr_names <- reactive({
