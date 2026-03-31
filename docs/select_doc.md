@@ -18,23 +18,28 @@ All other herds include only a single dataset corresponding to the annual range 
 
 Press **Confirm herd** 
 
-### Change disturbance layer classification (Optional)
+<br>
 
-Click this option if you want to change the way linear and areal disturbances are classified. Default classification are by industry type (e.g., transporation) and 
-disturbance type (e.g., highway). This classification generates a table summarizing the industry and/or disturbance types and their associated length (km) or area (km2).   
-The table can be found under the **Custom buffers** tab located across the top and is required in the next step if custom buffer sizes are to be applied to industry and/or disturbance types. Use the drop-down menus to identify the industry and/or disturbance attributes for linear and areal disturbance features. 
-If attributes are not assigned, the table will simply summarize the features as "linear" and "areal".
+**(OPTIONAL) Change disturbance layer classification**
+
+Disturbances are classified by default by INDUSTRY_TYPE (e.g., transporation) and DISTURBANCE_TYPE (e.g., highway). 
+This classification generates a table summarizing the industry and/or disturbance types and their associated length (km) or area (km2). 
+The table is found under the **Custom buffers** tab located across the top. To change the classification, check the box and select the drop-down menus to identify 
+the industry and/or disturbance attributes for linear and areal disturbance features associated to the selected herd range. If attributes are not assigned, 
+the table will simply summarize the features as "linear" and "areal".
    
-*Note*: The option will be disable if the herd only include fires
+*Note*: The option will be disable if the herd range only include fires
    
-Press **Submit and Continue** if you want the analysis to consider the changes
+Press **Submit and Continue** to apply the new classification.
 
+<br>
 
-### Upload other disturbances (Optional)
+**(OPTIONAL) Upload other disturbances**
 
 Here, the user has the option to upload additional linear and areal disturbances (e.g., proposed development, insect outbreaks, etc.) as shapefiles which can be included in the mapping workflow or used solely for visualization. 
-Use the drop-down menus to browse to the shapefile. Shapefiles are comprised of multiple files, and all files must be selected (e.g., shp, shx, dbf, prj, etc.). Once selected, click "Confirm upload" to load the spatial layers.
+Use the drop-down menus to browse to the shapefile. Shapefiles are comprised of multiple files, and all files must be selected (e.g., shp, shx, dbf, prj, etc.). 
+Once selected, click **Confirm upload** to load the spatial layers. The layers will appear on a map. Each layers can be turned on and off. 
 
-The layers will appear on a map. Each layers can be turned on and off. From here, you may proceed to **Add display elements** if needed, or go directly to **Buffer features**.
+From here, you may proceed to **Add display elements** if needed, or go directly to **Buffer features**.
 
 
