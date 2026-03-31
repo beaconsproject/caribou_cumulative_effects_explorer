@@ -7,14 +7,8 @@ format: md
 
 This section defines the key inputs used to configure the analysis, including the selection of a caribou herd, disturbance classifications, and any additional user-provided data.
 
-
-### Select caribou herd
-
-In this step, users select the caribou herd to include in the analysis. All required data are embedded within the app. If the Little Rancheria herd is selected, users 
-will be prompted to choose from a list of available ranges and corridors. For some ranges, users can further specify whether to use the core area or the full 
-extent of use.
-
-All other herds include only a single dataset corresponding to the annual range defined by the Yukon Government.
+All required data for each herd are embedded within the app. If the Little Rancheria herd is selected, users will be prompted to choose from a list of available ranges and corridors.
+For some ranges, users can further specify whether to use the core area or the full extent of use. All other herds include only a single dataset corresponding to the annual range defined by the Yukon Government.
 
 Press **Confirm herd** 
 
