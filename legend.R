@@ -1,3 +1,9 @@
+######################################################
+######################################################
+# GENERATE TWO LEGENDS (SHINY and REPORT)
+######################################################
+######################################################
+## 1. LEGEND SHINY
 # Set up your colors and layer names
 legend_items <- data.frame(
   label = c("Undisturbed areas\u00B9", 
@@ -12,12 +18,14 @@ legend_items <- data.frame(
             "Quartz Claims", 
             "Placer Claims", 
             "Mining Claims",
+            "Critical mineral occurrences",
+            "Priority critical mineral occurrences",
             "Protected areas", 
             "Intact FL 2000", 
             "Intact FL 2020"
   ),
-  color = c("#336633", 
-            "black", 
+  color = c("#33663380", 
+            "#333333", 
             "#660000", 
             "#CC3333", 
             "#FF9966",
@@ -25,9 +33,11 @@ legend_items <- data.frame(
             "#996633", 
             "#663300", 
             "pink",
-            "#CCCCCC",
+            "#999999",
             "#666666", 
-            "#666666",
+            "#999999",
+            "#8B7D6B",
+            "#EE6363",
             "#699999",
             "#3366FF", 
             "#000066"
@@ -44,6 +54,8 @@ legend_items <- data.frame(
            "polygon", 
            "polygon", 
            "polygon", 
+           "point",
+           "point",
            "polygon", 
            "polygon", 
            "polygon"
@@ -66,6 +78,15 @@ for (i in seq_len(nrow(legend_items))) {
     rect(0.05, y_pos - 0.3, 0.15, y_pos + 0.3, col = legend_items$color[i], border = NA)
   } else if (legend_items$type[i] == "line") {
     lines(c(0.05, 0.15), c(y_pos, y_pos), col = legend_items$color[i], lwd = 3)
+  }else{
+    points(
+      x = 0.1,
+      y = y_pos,
+      pch = 21,                    
+      col = legend_items$color[i], 
+      bg  = legend_items$color[i], 
+      cex = 1.8
+    )
   }
   text(0.3, y_pos, legend_items$label[i], pos = 4, cex = 0.9)
 }
@@ -73,5 +94,7 @@ for (i in seq_len(nrow(legend_items))) {
 
 # Save the file
 dev.off()
+
+
 
 

@@ -1,6 +1,6 @@
 ## Datasets
 
-The Caribou Cumulative Effects Disturbance Explorer integrates a set of spatial datasets to support the visualization and assessment of cumulative disturbances 
+The Caribou Cumulative Effects Explorer integrates a set of spatial datasets to support the visualization and assessment of cumulative disturbances 
 within caribou ranges. These datasets provide the foundation for exploring how different types of disturbances overlap with herd ranges and contribute to overall 
 landscape condition.
 

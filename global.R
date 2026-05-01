@@ -25,6 +25,18 @@ library(tidyr)
 library(sf)
 library(shinyMatrix)
 library(utils)
+library(tmap)
+library(pagedown)
+library(kableExtra)
+library(knitr)
+
+r_files <- list.files(
+  file.path(getwd(), "R"),
+  pattern = "\\.[rR]$",
+  full.names = TRUE
+)
+
+invisible(lapply(r_files, source))
 
 
 caribouherds <- st_read("www/CaribouHerds.shp") %>% st_transform(4326)
@@ -118,3 +130,432 @@ gradient_rast2 <- "display:inline-block; width:80px; height:15px;
                  background: linear-gradient(to right, #0000FF, #FFFF00, #FF0000);
                  margin-right:8px; border:1px solid #000;"
 
+
+
+build_map <- function(rv){
+  tmap_mode("plot")
+  
+  visible <- rv$visible_groups()
+
+  # palette 
+  fire_pal <- c(
+    "Lightning" = "#996633",
+    "Human" = "#663300",
+    "Unknown" = "pink"
+  )
+  
+  herd_pal <- colorRampPalette(
+    c('#a6cee3','#1f78b4','#b2df8a','#33a02c',
+      '#fb9a99','#e31a1c','#fdbf6f','#ff7f00',
+      '#cab2d6','#6a3d9a','#ffff99','#b15928')
+  )
+  
+  caribouherds$pal <- herd_pal(length(unique(caribouherds$HERD)))[
+    match(caribouherds$HERD, unique(caribouherds$HERD))
+  ]
+  
+  sa <- rv$sa()
+  sa_buff <- sf::st_buffer(sa, dist = 20000)
+  bb <- sf::st_bbox(sa_buff)
+  
+  # start map
+  map <- tm_shape(caribouherds)+
+    tm_shape(sa) +
+    tm_polygons(
+      col = '#663399',
+      lwd = 3,
+    ) +
+    tm_view(
+      bbox = bb
+    )
+  
+  # base layers (equivalent to basemap in Leaflet is not truly available in static tmap,
+  # so we just build vector layers in correct order)
+  
+  # Protected areas
+  if ("Protected areas" %in% visible) {
+    poly <- rv$statslayers_rv$pa2021
+    map <- map +
+      tm_shape(poly) +
+      tm_polygons(
+        col = '#699999',
+        alpha = 1,
+        lwd = 1,
+        border.col = '#699999'
+      )
+  }
+  
+  # Intact FL 2000
+  if ("Intact FL 2000" %in% visible) {
+    poly <- rv$statslayers_rv$ifl2000
+    map <- map +
+      tm_shape(poly) +
+      tm_polygons(
+        col = '#3366FF',
+        alpha = 1,
+        lwd = 1,
+        border.col = '#3366FF'
+      )
+  }
+  
+  # Intact FL 2020
+  if ("Intact FL 2020" %in% visible) {
+    poly <- rv$statslayers_rv$ifl2020
+    map <- map +
+      tm_shape(poly) +
+      tm_polygons(
+        col = '#000066',
+        alpha = 1,
+        lwd = 1,
+        border.col = '#000066'
+      )
+  }
+  # Lakes
+  if ("Lakes" %in% visible) {
+    map <- map +
+      tm_shape(lakes) +
+      tm_polygons(col = "#97FFFF", alpha = 0, border.col = "#97FFFF", lwd = 2)
+  }
+  
+  # Rivers
+  if ("Rivers" %in% visible) {
+    map <- map +
+      tm_shape(rivers) +
+      tm_lines(col = "#97FFFF", lwd = 2)
+  }
+  
+  # Proposed IPCAs
+  if ("Proposed IPCAs*" %in% visible) {
+    map <- map +
+      tm_shape(proposed_ipcas) +
+      tm_polygons(
+        col = "black",
+        alpha = 0.2,
+        border.col = "black",
+        lwd = 1
+      )
+  }
+  
+  # Caribou herds (usually always visible)
+  if ("Caribou herds" %in% visible) {
+    map <- map +
+      tm_shape(caribouherds) +
+      tm_polygons(
+        col = "HERD",
+        palette = herd_pal(length(unique(caribouherds$HERD))),
+        alpha = 0.6,
+        lwd = 1,
+        border.col = "black"
+      )
+  }
+  
+  # Critical mineral occurrences
+  if ("Critical mineral occurrences" %in% visible) {
+    map <- map +
+      tm_shape(critical_occ) +
+      tm_symbols(
+        col = "#8B7D6B",
+        size = 0.4,
+        shape = 21,
+        border.col = "#8B7D6B"
+      )
+  }
+  
+  if ("Priority critical mineral occurrences" %in% visible) {
+    map <- map +
+      tm_shape(priority_occ) +
+      tm_symbols(
+        col = "#EE6363",
+        size = 0.4,
+        shape = 21,
+        border.col = "#EE6363"
+      )
+  }
+  
+  # Placers Claims
+  if ("Placer Claims" %in% visible) {
+    placers <- rv$statslayers_rv$placers
+    map <- map +
+      tm_shape(placers) +
+      tm_polygons(
+        col = '#666666',
+        alpha = 1,
+        lwd = 1,
+        border.col = '#666666'
+      )
+  }
+  
+  # Quartz Claims
+  if ("Quartz Claims" %in% visible) {
+    quartz <- rv$statslayers_rv$quartz
+    map <- map +
+      tm_shape(quartz) +
+      tm_polygons(
+        col = '#CCCCCC',
+        alpha = 1,
+        lwd = 1,
+        border.col = '#CCCCCC'
+      )
+  }
+  
+  # Mining Claims
+  if ("Mining Claims" %in% visible) {
+    mines <- rv$statslayers_rv$mines
+    map <- map +
+      tm_shape(mines) +
+      tm_polygons(
+        col = '#666666',
+        alpha = 1,
+        lwd = 1,
+        border.col = '#666666'
+      )
+  }
+  
+  # Areal disturbances
+  if ("Areal disturbances" %in% visible) {
+    poly <- rv$statslayers_rv$poly
+    map <- map +
+      tm_shape(poly) +
+      tm_polygons(
+        col = '#660000',
+        alpha = 1,
+        lwd = 1,
+        border.col = '#660000'
+      )
+  }
+  
+  # Linear disturbances
+  if ("Linear disturbances" %in% visible) {
+    line <- rv$statslayers_rv$line
+    map <- map +
+      tm_shape(line) +
+      tm_lines(col = "#CC3333", lwd = 1)
+  }
+  
+  # Fires
+  if ("Fires" %in% visible) {
+    fires <- rv$statslayers_rv$fires
+    fires$CAUSE_LABEL <- dplyr::case_when(
+      fires$CAUSE == "Natural" ~ "Lightning",
+      fires$CAUSE == "Human" ~ "Human",
+      is.na(fires$CAUSE) | fires$CAUSE == "Undetermined" ~ "Unknown",
+      TRUE ~ "Unknown"  # Catch any other unexpected cases
+    )
+    
+    map <- map +
+      tm_shape(fires) +
+      tm_polygons(
+        col = "CAUSE_LABEL",
+        palette = fire_pal,
+        alpha = 1,
+        lwd = 1,
+        legend.show = FALSE
+      )
+  }
+  
+  #######################
+  # Footprint
+  #######################
+  if ("Disturbed areas (human)" %in% visible) {
+    footprint_sf <- rv$footprint_sf()
+    map <- map +
+      tm_shape(footprint_sf) +
+      tm_polygons(
+        col = 'black',
+        alpha = 0.5,
+        lwd = 1,
+        border.col = 'black'
+      )
+  }
+  if ("Disturbed areas (human + fires)" %in% visible) {
+    footprintfire_sf <- rv$footprintfire_sf()
+    map <- map +
+      tm_shape(footprintfire_sf) +
+      tm_polygons(
+        col = 'black',
+        alpha = 0.5,
+        lwd = 1,
+        border.col = 'black'
+      )
+  }
+  if ("Undisturbed areas" %in% visible) {
+    intactness_sf <- rv$intactness_sf()
+    map <- map +
+      tm_shape(intactness_sf) +
+      tm_polygons(
+        col = '#336633',
+        alpha = 0.5,
+        lwd = 1,
+        border.col = '#336633'
+      )
+  }
+  
+  #######################
+  # Other dist
+  #######################
+  if ("Other linear disturbances" %in% visible) {
+    other_line <- rv$other_linedist()
+    map <- map +
+      tm_shape(other_line) +
+      tm_lines(col = "#FF6600", lwd = 1)
+  }
+  if ("Other areal disturbances" %in% visible) {
+    other_poly <- rv$other_polydist()
+    map <- map +
+      tm_shape(other_poly) +
+      tm_polygons(col = "#FF9966", 
+                  alpha = 0.5,
+                  lwd = 1,
+                  border.col = "#FF9966"
+      )
+  }
+  
+  # IPCA planning area
+  if ("LFN IPCA planning area" %in% visible) {
+    map <- map +
+      tm_shape(IPCA_PL) +
+      tm_borders(col = "black", lwd = 2)
+  }
+  
+  # KDTT
+  if ("Kaska Dene Traditional Territory" %in% visible) {
+    map <- map +
+      tm_shape(kdtt) +
+      tm_borders(col = "#660066", lwd = 2)
+  }
+  
+  
+  # final layout
+  final_map <- map +
+    tm_layout(
+      frame = FALSE,
+      legend.outside = TRUE,
+      main.title = rv$herd_range(),
+      main.title.position = "center"
+    )
+}
+
+square_box <- function(x, y, size_in_in = 0.25, col) {
+  # Convert from inches to user coordinates
+  x1 <- grconvertX(x, "ndc", "user")
+  y1 <- grconvertY(y, "ndc", "user")
+  w  <- grconvertX(size_in_in, "inches", "user") - grconvertX(0, "inches", "user")
+  h  <- grconvertY(size_in_in, "inches", "user") - grconvertY(0, "inches", "user")
+  
+  rect(x1, y1, x1 + w, y1 + h, col = col, border = NA)
+}
+
+create_legend_png <- function(path, visible_layers) {
+  legend_report <- data.frame(
+    group = c(
+      "LFN IPCA planning area",
+      "Kaska Dene Traditional Territory",
+      "Undisturbed areas",
+      "Disturbed areas (human)", 
+      "Areal disturbances", 
+      "Linear disturbances", 
+      "Other areal disturbances",
+      "Other linear disturbances",
+      "Fires", "Fires", "Fires",
+      "Quartz Claims", 
+      "Placer Claims", 
+      "Mining Claims",
+      "Critical mineral occurrences",
+      "Priority critical mineral occurrences",
+      "Protected areas", 
+      "Intact FL 2000", 
+      "Intact FL 2020"
+    ),
+    label = c("LFN IPCA planning area",
+              "Kaska Dene Traditional Territory",
+              "Undisturbed areas\u00B9", 
+              "Disturbed areas\u00B2", 
+              "Areal disturbances", 
+              "Linear disturbances", 
+              "Other areal disturbances",
+              "Other linear disturbances",
+              "Fires (Lightning)", 
+              "Fires (Human)", 
+              "Fires (Unknown)",
+              "Quartz Claims", 
+              "Placer Claims", 
+              "Mining Claims",
+              "Critical mineral occurrences",
+              "Priority critical mineral occurrences",
+              "Protected areas", 
+              "Intact FL 2000", 
+              "Intact FL 2020"
+    ),
+    color = c('black',
+              "#660066",
+              "#33663380", 
+              "#333333", 
+              "#660000", 
+              "#CC3333", 
+              "#FF9966",
+              "#FF6600",
+              "#996633", 
+              "#663300", 
+              "pink",
+              "#999999",
+              "#666666", 
+              "#999999",
+              "#8B7D6B",
+              "#EE6363",
+              "#699999",
+              "#3366FF", 
+              "#000066"
+    ),
+    type = c("line", 
+             "line", 
+             "polygon", 
+             "polygon", 
+             "polygon", 
+             "line", 
+             "polygon", 
+             "line",
+             "polygon", 
+             "polygon", 
+             "polygon", 
+             "polygon", 
+             "polygon", 
+             "polygon", 
+             "point",
+             "point",
+             "polygon", 
+             "polygon", 
+             "polygon"
+    ),
+    stringsAsFactors = FALSE
+  )
+  
+  legend_report <- legend_report %>%
+    dplyr::filter(group %in% visible_layers)
+  n <- nrow(legend_report)
+  
+  png(path, width = 600, height = 800, res = 120)
+  par(mar = c(1, 1, 1, 1), oma = c(0, 0, 0, 0))
+  plot(NULL, xlim = c(0, 1), ylim = c(0, n+2), xaxt = "n", yaxt = "n",
+       xlab = "", ylab = "", bty = "n")
+  
+  box_size <- 0.5   # square size in row units
+  
+  for (i in seq_len(n)) {
+    # Row center
+    y <- n - i + 0.5
+    
+    # Draw square
+    if (legend_report$type[i] == "polygon") {
+      rect(0.05, y - box_size/2, 0.2,  y + box_size/2, col = legend_report$color[i], border = NA)
+    } else if (legend_report$type[i] == "line") {
+      segments(0.05, y, 0.2, y, col = legend_report$color[i], lwd = 3)
+    }else{
+      points(0.125, y, pch = 21,  bg = legend_report$color[i], col = "black", cex = 1.5)
+    }
+    
+    # Draw text (bigger font OK)
+    text(0.25, y, legend_report$label[i], pos = 4, cex = 1.4)
+  }
+  
+  dev.off()
+}

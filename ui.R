@@ -1,11 +1,11 @@
 ui = dashboardPage(skin="black",
-                   title = "Caribou Cumulative Effect Disturbance Explorer",
+                   title = "Caribou Cumulative Effects Explorer",
                    dashboardHeader(title = tags$div(
                      tags$img(
                        src = "logoblanc.png",  # Replace with your logo file name
                        height = "50px",   # Adjust the height of the logo
                        style = "margin-right: 10px;"  # Add some spacing around the logo
-                     ), "Caribou Cumulative Effect Disturbance Explorer" ), titleWidth = 600,
+                     ), "Caribou Cumulative Effects Explorer" ), titleWidth = 600,
                     
                      # Add Reload Button Next to Sidebar Toggle
                      tags$li(
@@ -187,8 +187,9 @@ ui = dashboardPage(skin="black",
                        tabItem(tabName="select",
                                fluidRow(
                                  tabBox(id = "one", width="8",
-                                        tabPanel("Mapview", #leafletOutput("map1", height=900) %>% withSpinner()),
-                                                 div(leafletOutput("map1", height = 900) %>% withSpinner(),
+                                        tabPanel("Mapview", 
+                                                 div(style = "text-align: center;", hidden(actionButton("capture_map", "Generate the report using this map", class = "btn-warning", style = "color: #000;"))),
+                                                 div(id = "map_container", leafletOutput("map", height = 900) %>% withSpinner(),
                                                    div("*A final determination of LFN IPCA boundaries continues to be informed by ongoing research, review, and consultation by LFN.", 
                                                        style = "text-align:center; font-size:16px; font-weight: bold; margin-top:5px; color:gray;"))
                                                  ),
@@ -198,6 +199,17 @@ ui = dashboardPage(skin="black",
                                                  tags$h4("Define areal buffer sizes:"),
                                                  uiOutput("areal_matrix_ui"),
                                                  div(style="margin-right:10px;", downloadButton("downloadMatrix", "Download tables as csv", style='color: #000'))
+                                        ),
+                                        tabPanel("Summary statistics",
+                                                 tags$h4("Summary statistics"),
+                                                 div(
+                                                   style = "overflow-x: auto; white-space: nowrap; font-size: 12px;",
+                                                   tableOutput("stat_tab")
+                                                 ),
+                                                 div(style = "display: flex; justify-content: center; margin-top: 10px;",
+                                                     downloadButton("downloadStats", "Download statistics table", style='color: #000')
+                                                 ),
+                                                 uiOutput("stats_ui"),
                                         ),
                                         tabPanel("User Guide",
                                                  # Dynamically update the content of Guidance based on selected tab
@@ -218,16 +230,13 @@ ui = dashboardPage(skin="black",
                                                    includeMarkdown("./docs/dwd_doc.md")
                                                  )
                                         ),
-                                        tabPanel("Summary statistics",
-                                                 tags$h4("Summary statistics"),
-                                                 div(
-                                                   style = "overflow-x: auto; white-space: nowrap; font-size: 12px;",
-                                                   tableOutput("stat_tab")
-                                                  ),
-                                                  div(style = "display: flex; justify-content: center; margin-top: 10px;",
-                                                      downloadButton("downloadStats", "Download statistics table", style='color: #000')
-                                                  ),
-                                                  uiOutput("stats_ui"),
+                                        tabPanel("Reporting",
+                                                 div(style = "display:flex; justify-content: space-between; align-items: center;",
+                                                     h3("Preview report"),
+                                                     downloadButton("download_report", "Download report")
+                                                 ),
+                                                 hr(),
+                                                 uiOutput("report_preview")
                                         )
                                  ),
                                  tabBox(
@@ -236,12 +245,12 @@ ui = dashboardPage(skin="black",
                                      
                                    tagList(# tab content
                                      tableOutput("tab1"),
-                                     hidden(actionButton("save_stats", "Add statistics to summary statistics", icon = icon("plus"), 
-                                                  class = "btn-xs", style = "font-size: 14px; margin-left: 8px;"))
-                                     ),
+                                     div(uiOutput("acronym_definitions"),style = "margin-top: -10px;"),
                                      br(),
-                                     uiOutput("acronym_definitions")
-                                   
+                                     hidden(actionButton("save_stats", "Save statistics to summary statistics", icon = icon("plus"), 
+                                                  class = "btn-warning", style = "color: #000; font-size: 14px; margin-left: 8px;")), 
+                                     uiOutput("legend_definitions"),
+                                     ),
                                    )
                                  )
                                )

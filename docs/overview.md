@@ -1,13 +1,13 @@
-## Welcome to the Caribou Cumulative Effects Disturbance Explorer 
+## Welcome to the Caribou Cumulative Effects Explorer 
 
-**Caribou Cumulative Effects Disturbance Explorer** generates custom maps of undisturbed and disturbed landscapes with tools to explore the influence of buffer size 
+**Caribou Cumulative Effects Explorer** generates custom maps of undisturbed and disturbed landscapes with tools to explore the influence of buffer size 
 (or zone of influence), minimum patch size, fire, and potential future disturbances (e.g., mining claims) on these landscapes. A built-in **User Guide** tab provides 
 step-by-step instructions and function descriptions, while the **Dataset Requirements** tab details data formats and spatial layers needed to run the app.
 
 
 ### Input data
   
-**Caribou Cumulative Effects Disturbance Explorer** relies on several key spatial layers. The app has already embedded the caribou herds crossing the LFN IPCA planning 
+**Caribou Cumulative Effects Explorer** relies on several key spatial layers. The app has already embedded the caribou herds crossing the LFN IPCA planning 
 region with all their associated layers. It is possible for the user to add extra linear and/or areal disturbances as well as display elements as vector and/or raster 
 format. Please refer to the **Dataset Requirements** tab for details on associated attributes and formatting.
 
@@ -54,7 +54,7 @@ by the app and cannot be modified.
     
   - Download a GeoPackage of the **undisturbed areas** and **disturbed areas** created by the app, as well as the input spatial layers (e.g., linear and areal disturbances).
   
-### Caribou Cumulative Effects Disturbance Explorer workflow diagram
+### Caribou Cumulative Effects Explorer workflow diagram
 
 The worflow diagram below provides an overview of the process.
 
