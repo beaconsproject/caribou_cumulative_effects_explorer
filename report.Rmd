@@ -40,7 +40,7 @@ knitr::opts_chunk$set(
 herd <- params$herd
 stats <- params$stats
 
-area <- stats$Value[stats$Attribute == "Annual range (YG) (km2)"]
+area <- as.numeric(stats[1,2])
 und  <- stats$Value[stats$Attribute == "Undisturbed areas (%)"]
 dist <- stats$Value[stats$Attribute == "Disturbed areas (%)"]
 fires  <- stats$Value[stats$Attribute == "Fires (%)"]
@@ -332,6 +332,7 @@ knitr::kable(params$matrix_line, row.names = FALSE, format = "html", table.attr 
   kableExtra::row_spec(1:nrow(params$matrix_line), extra_css = "padding-top: 2px; padding-bottom: 2px;")
 ```
 <div style="margin-bottom:30px;">
+
 ```{r, echo=FALSE, results='asis'}
 sumStats <- params$summaryStats
 
@@ -343,7 +344,7 @@ if (!is.null(sumStats) && nrow(sumStats) > 0) {
   cat("This table displays statistics saved during the exploratory analysis. While the application does not restrict the number of saved scenarios, the report is limited to a maximum of three, with the first column always representing the scenario used to generate the report.\n\n")
 
   sumStats$used_in_report <-
-    sumStats$Area_km2 == stats$Value[stats$Attribute == "Annual range (YG) (km2)"] &
+    sumStats$Area_km2 == as.numeric(stats[1,2]) &
     sumStats$Undisturbed_per == stats$Value[stats$Attribute == "Undisturbed areas (%)"] &
     sumStats$Disturbed_per == stats$Value[stats$Attribute == "Disturbed areas (%)"] &
     sumStats$Lineardist_km == stats$Value[stats$Attribute == "Linear disturbances (km)"]
@@ -370,7 +371,7 @@ if (!is.null(sumStats) && nrow(sumStats) > 0) {
     dplyr::select(-Name)
   
   attr_labels <- c(
-    Area_km2 = "Annual range (km²)",
+    Area_km2 = "Area (km²)",
     Undisturbed_per = "Undisturbed (%)",
     Disturbed_per = "Disturbed (%)",
     Lineardist_km = "Linear disturbance (km)",
@@ -397,7 +398,9 @@ if (!is.null(sumStats) && nrow(sumStats) > 0) {
     distinct(run_id, Name) %>%
     arrange(run_id)
   
-  colnames(sumStats_pivot)[-1] <- name_map$Name
+  short_names <- sapply(str_split(name_map$Name, " - "), function(x) { paste(tail(x, 2), collapse = " - ") }) 
+  
+  colnames(sumStats_pivot)[-1] <- short_names
 
   knitr::kable(sumStats_pivot) %>%
     kableExtra::kable_styling(full_width = FALSE, font_size = 13) %>%

@@ -898,7 +898,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
     map_bounds1 <- sa %>% st_bbox() %>% as.character()
     
     rv$rge_clear(rv$rge_selected())  
-    rv$herd_range(paste0(input$selectInput, "-", rv$rge_selected()))
+    rv$herd_range(paste0(input$selectInput, " - ", rv$rge_selected()))
     dist_names_new <- c(rv$dist_names())
     add_names_new <- c(rv$add_names())
     

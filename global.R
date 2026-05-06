@@ -159,18 +159,25 @@ build_map <- function(rv){
   bb <- sf::st_bbox(sa_buff)
   
   # start map
-  map <- tm_shape(caribouherds)+
-    tm_shape(sa) +
-    tm_polygons(
-      col = '#663399',
-      lwd = 3,
-    ) +
+  map <- tm_shape(sa) +
+    tm_borders(col = '#663399', lwd = 3) +
     tm_view(
       bbox = bb
     )
   
   # base layers (equivalent to basemap in Leaflet is not truly available in static tmap,
   # so we just build vector layers in correct order)
+  if(rv$herd() == "www/littlerancheria.gpkg"){
+    if(rv$herd_range() != "Annual range (YG)"){
+      if("Annual range (YG)" %in% visible){
+        poly <- st_read(rv$herd(), layer = "studyarea") %>% st_transform(4326)
+        map <- map +
+          tm_shape(poly) +
+          tm_borders(col = "black", lwd = 1)
+      }
+    }
+      
+  }
   
   # Protected areas
   if ("Protected areas" %in% visible) {
@@ -179,8 +186,9 @@ build_map <- function(rv){
       tm_shape(poly) +
       tm_polygons(
         col = '#699999',
+        border.col = NA,
         alpha = 1,
-        lwd = 1,
+        lwd = 0,
         border.col = '#699999'
       )
   }
@@ -192,9 +200,9 @@ build_map <- function(rv){
       tm_shape(poly) +
       tm_polygons(
         col = '#3366FF',
-        alpha = 1,
-        lwd = 1,
-        border.col = '#3366FF'
+        border.col = NA,
+        lwd= 0,
+        alpha = 1
       )
   }
   
@@ -205,9 +213,9 @@ build_map <- function(rv){
       tm_shape(poly) +
       tm_polygons(
         col = '#000066',
-        alpha = 1,
-        lwd = 1,
-        border.col = '#000066'
+        border.col = NA,
+        lwd= 0,
+        alpha = 1
       )
   }
   # Lakes
@@ -230,9 +238,9 @@ build_map <- function(rv){
       tm_shape(proposed_ipcas) +
       tm_polygons(
         col = "black",
-        alpha = 0.2,
-        border.col = "black",
-        lwd = 1
+        border.col = NA,
+        lwd= 0,
+        alpha = 0.2
       )
   }
   
@@ -242,10 +250,10 @@ build_map <- function(rv){
       tm_shape(caribouherds) +
       tm_polygons(
         col = "HERD",
+        border.col = NA,
+        lwd= 0,
         palette = herd_pal(length(unique(caribouherds$HERD))),
-        alpha = 0.6,
-        lwd = 1,
-        border.col = "black"
+        alpha = 0.6
       )
   }
   
@@ -274,27 +282,27 @@ build_map <- function(rv){
   
   # Placers Claims
   if ("Placer Claims" %in% visible) {
-    placers <- rv$statslayers_rv$placers
+    placers <- rv$layers_rv$placers
     map <- map +
       tm_shape(placers) +
       tm_polygons(
         col = '#666666',
-        alpha = 1,
-        lwd = 1,
-        border.col = '#666666'
+        border.col = NA,
+        lwd= 0,
+        alpha = 1
       )
   }
   
   # Quartz Claims
   if ("Quartz Claims" %in% visible) {
-    quartz <- rv$statslayers_rv$quartz
+    quartz <- rv$layers_rv$quartz
     map <- map +
       tm_shape(quartz) +
       tm_polygons(
         col = '#CCCCCC',
-        alpha = 1,
-        lwd = 1,
-        border.col = '#CCCCCC'
+        border.col = NA,
+        lwd= 0,
+        alpha = 1
       )
   }
   
@@ -305,9 +313,9 @@ build_map <- function(rv){
       tm_shape(mines) +
       tm_polygons(
         col = '#666666',
-        alpha = 1,
-        lwd = 1,
-        border.col = '#666666'
+        border.col = NA,
+        lwd= 0,
+        alpha = 1
       )
   }
   
@@ -318,9 +326,9 @@ build_map <- function(rv){
       tm_shape(poly) +
       tm_polygons(
         col = '#660000',
-        alpha = 1,
-        lwd = 1,
-        border.col = '#660000'
+        border.col = NA,
+        lwd= 0,
+        alpha = 1
       )
   }
   
@@ -346,9 +354,10 @@ build_map <- function(rv){
       tm_shape(fires) +
       tm_polygons(
         col = "CAUSE_LABEL",
+        border.col = NA,
+        lwd= 0,
         palette = fire_pal,
         alpha = 1,
-        lwd = 1,
         legend.show = FALSE
       )
   }
@@ -362,9 +371,9 @@ build_map <- function(rv){
       tm_shape(footprint_sf) +
       tm_polygons(
         col = 'black',
-        alpha = 0.5,
-        lwd = 1,
-        border.col = 'black'
+        border.col = NA,
+        lwd= 0,
+        alpha = 0.5
       )
   }
   if ("Disturbed areas (human + fires)" %in% visible) {
@@ -373,9 +382,9 @@ build_map <- function(rv){
       tm_shape(footprintfire_sf) +
       tm_polygons(
         col = 'black',
-        alpha = 0.5,
-        lwd = 1,
-        border.col = 'black'
+        border.col = NA,
+        lwd= 0,
+        alpha = 0.5
       )
   }
   if ("Undisturbed areas" %in% visible) {
@@ -384,9 +393,9 @@ build_map <- function(rv){
       tm_shape(intactness_sf) +
       tm_polygons(
         col = '#336633',
-        alpha = 0.5,
-        lwd = 1,
-        border.col = '#336633'
+        border.col = NA,
+        lwd= 0,
+        alpha = 0.5
       )
   }
   
@@ -404,9 +413,10 @@ build_map <- function(rv){
     map <- map +
       tm_shape(other_poly) +
       tm_polygons(col = "#FF9966", 
+                  border.col = NA,
+                  lwd= 0,
                   alpha = 0.5,
-                  lwd = 1,
-                  border.col = "#FF9966"
+                  lwd = 1
       )
   }
   
@@ -414,7 +424,7 @@ build_map <- function(rv){
   if ("LFN IPCA planning area" %in% visible) {
     map <- map +
       tm_shape(IPCA_PL) +
-      tm_borders(col = "black", lwd = 2)
+      tm_borders(col = "#555555", lwd = 2)
   }
   
   # KDTT
@@ -448,6 +458,7 @@ square_box <- function(x, y, size_in_in = 0.25, col) {
 create_legend_png <- function(path, visible_layers) {
   legend_report <- data.frame(
     group = c(
+      "Annual range (YG)",
       "LFN IPCA planning area",
       "Kaska Dene Traditional Territory",
       "Undisturbed areas",
@@ -466,7 +477,8 @@ create_legend_png <- function(path, visible_layers) {
       "Intact FL 2000", 
       "Intact FL 2020"
     ),
-    label = c("LFN IPCA planning area",
+    label = c("Annual range (YG)",
+              "LFN IPCA planning area",
               "Kaska Dene Traditional Territory",
               "Undisturbed areas\u00B9", 
               "Disturbed areas\u00B2", 
@@ -487,6 +499,7 @@ create_legend_png <- function(path, visible_layers) {
               "Intact FL 2020"
     ),
     color = c('black',
+              '#555555',
               "#660066",
               "#33663380", 
               "#333333", 
@@ -507,6 +520,7 @@ create_legend_png <- function(path, visible_layers) {
               "#000066"
     ),
     type = c("line", 
+             "line", 
              "line", 
              "polygon", 
              "polygon", 
