@@ -423,7 +423,7 @@ If you encounter any issues, have questions regarding the interpretation of the 
 
 When using results or figures derived from this report in presentations, publications, or other materials, please acknowledge the application as follows:
 
-“Generated using the Caribou Cumulative Effects Disturbance Explorer developed through the BEACONs Project.”
+“Generated using the Caribou Cumulative Effects Explorer developed through the BEACONs Project.”
 
 The application can be accessed here: https://beaconsproject.shinyapps.io/Caribou_CE_Disturbance_Explorer/
 
