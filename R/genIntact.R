@@ -88,17 +88,17 @@ genIntactServer <- function(input, output, session, project, map, rv){
     
     if (!is.null(rv$layers_rv$poly) | !is.null(rv$layers_rv$line) | !is.null(fires()) | !is.null(rv$layers_rv$mines_all)  | !is.null(rv$other_linedist()) | !is.null(rv$other_polydist())) {
       if (!is.null(rv$layers_rv$poly) | !is.null(rv$layers_rv$line) ) {
-        #if(input$createMatrix) {
-        #  industry_line <- input$lineindustry
-        #  disttype_line <- input$linedisttype
-        #  industry_poly <- input$polyindustry
-        #  disttype_poly <- input$polydisttype
-        #}else{
-        #  industry_line <- "TYPE_INDUSTRY"
-        #  disttype_line <- "TYPE_DISTURBANCE"
-        #  industry_poly <- "TYPE_INDUSTRY"
-        #  disttype_poly <- "TYPE_DISTURBANCE"
-        #}
+        if(input$createMatrix) {
+          industry_line <- input$lineindustry
+          disttype_line <- input$linedisttype
+          industry_poly <- input$polyindustry
+          disttype_poly <- input$polydisttype
+        }else{
+          industry_line <- "TYPE_INDUSTRY"
+          disttype_line <- "TYPE_DISTURBANCE"
+          industry_poly <- "TYPE_INDUSTRY"
+          disttype_poly <- "TYPE_DISTURBANCE"
+        }
         
         if (is.null(input$selectBuffer) && (!is.null(rv$layers_rv$line) || !is.null(rv$layers_rv$poly))){
           showModal(modalDialog(
