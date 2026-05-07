@@ -432,8 +432,7 @@ build_map <- function(rv){
       tm_polygons(col = "#FF9966", 
                   border.col = NA,
                   lwd= 0,
-                  alpha = 0.5,
-                  lwd = 1
+                  alpha = 0.5
       )
   }
   
