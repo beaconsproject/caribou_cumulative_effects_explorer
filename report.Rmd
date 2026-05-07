@@ -1,5 +1,5 @@
 ---
-title: "Caribou cumulative effect disturbance report"
+title: "Caribou Cumulative Effects report"
 output:
   html_document:
     toc: false
@@ -413,8 +413,19 @@ if (!is.null(sumStats) && nrow(sumStats) > 0) {
 
 
 ```
+<div style="margin-bottom:30px;">
+<div style="margin-top:30px;">
+### About this report
 
+This report was generated using the Caribou Cumulative Effects Explorer application developed through the BEACONs Project.
 
+If you encounter any issues, have questions regarding the interpretation of the results, or would like additional information, please contact the project team at beacons@ualberta.ca.
+
+When using results or figures derived from this report in presentations, publications, or other materials, please acknowledge the application as follows:
+
+“Generated using the Caribou Cumulative Effects Disturbance Explorer developed through the BEACONs Project.”
+
+The application can be accessed here: https://beaconsproject.shinyapps.io/Caribou_CE_Disturbance_Explorer/
 
 ---
 
