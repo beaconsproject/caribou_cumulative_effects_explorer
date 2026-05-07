@@ -31,6 +31,9 @@ server = function(input, output, session) {
     session$reload()
   })
   
+  output$overviewMD <- renderUI({
+    HTML(markdown::markdownToHTML(text = overview_md_text, fragment.only = TRUE))
+  })
   ################################################################################################
   # Control overlayGroups
   reactiveValsList <-  list(herd = reactiveVal(c()),

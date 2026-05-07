@@ -1,3 +1,4 @@
+
 ## Welcome to the Caribou Cumulative Effects Explorer 
 
 **Caribou Cumulative Effects Explorer** generates custom maps of undisturbed and disturbed landscapes with tools to explore the influence of buffer size 
