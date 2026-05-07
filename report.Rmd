@@ -355,7 +355,7 @@ if (!is.null(sumStats) && nrow(sumStats) > 0) {
                               TRUE ~ row_number())) %>%
     arrange(desc(run_id)) %>%
     slice_head(n = 3) %>%
-    select(-priority, - signature)
+    dplyr::select(-priority, -signature)
   
   sumStats_pivot <- sumStats %>%
     tidyr::pivot_longer(
