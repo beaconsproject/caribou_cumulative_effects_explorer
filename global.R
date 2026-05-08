@@ -147,7 +147,25 @@ gradient_rast2 <- "display:inline-block; width:80px; height:15px;
                  background: linear-gradient(to right, #0000FF, #FFFF00, #FF0000);
                  margin-right:8px; border:1px solid #000;"
 
-
+add_tm_layer <- function(map, obj, color, alpha = 1) {
+  if (is.null(obj)) return(map)
+  geom_type <- unique(sf::st_geometry_type(obj))
+  
+  if (any(geom_type %in% c("POLYGON", "MULTIPOLYGON"))) {
+    map <- map +
+      tm_shape(obj) +
+      tm_polygons(col = color, alpha = alpha,  border.col = NA, lwd=0)
+  } else if (any(geom_type %in% c("LINESTRING", "MULTILINESTRING"))) {
+    map <- map +
+      tm_shape(obj) +
+      tm_lines(col = color, lwd = 2)
+  } else if (any(geom_type %in% c("POINT", "MULTIPOINT"))) {
+    map <- map +
+      tm_shape(obj) +
+      tm_symbols(col = color, fill = color, size = 0.8, shape = 21)
+  }
+  map
+}
 
 build_map <- function(rv){
   tmap_mode("plot")
@@ -235,6 +253,36 @@ build_map <- function(rv){
         alpha = 1
       )
   }
+  
+  if (!is.null(rv$display1_name()) && rv$display1_name() %in% visible) {
+    display1_sf <- rv$display1_sf()
+    map <- add_tm_layer(map, sf::st_transform(display1_sf, 4326),  "#EE6363")
+  }
+  
+  if (!is.null(rv$display2_name()) && rv$display2_name() %in% visible) {
+    display2_sf <- rv$display2_sf()
+    map <- add_tm_layer(map, sf::st_transform(display2_sf, 4326),  "#33006689")
+  }
+  
+  if (!is.null(rv$display3_name()) && rv$display3_name() %in% visible) {
+    display3_sf <- rv$display3_sf()
+    map <- add_tm_layer( map, sf::st_transform(display3_sf, 4326), "#003333")
+  }
+  
+  if (!is.null(rv$rast1_name()) && rv$rast1_name() %in% visible) {
+    rast1 <- rv$rast1()
+    map <- map +
+      tm_shape(rast1) +
+      tm_raster(palette = viridis::viridis(256), alpha = 0.5)
+  }
+  
+  if (!is.null(rv$rast2_name()) && rv$rast2_name() %in% visible) {
+    rast2 <- rv$rast2()
+    map <- map +
+      tm_shape(rast2) +
+      tm_raster(palette = colorRampPalette(c("#0000FF", "#FFFF00", "#FF0000"))(256), alpha = 0.5)
+  }
+  
   # Lakes
   if ("Lakes" %in% visible) {
     map <- map +
@@ -450,7 +498,6 @@ build_map <- function(rv){
       tm_borders(col = "#660066", lwd = 2)
   }
   
-  
   # final layout
   final_map <- map +
     tm_layout(
@@ -471,7 +518,17 @@ square_box <- function(x, y, size_in_in = 0.25, col) {
   rect(x1, y1, x1 + w, y1 + h, col = col, border = NA)
 }
 
-create_legend_png <- function(path, visible_layers) {
+get_geom_type <- function(x) {
+  g <- unique(sf::st_geometry_type(x))
+  
+  if (any(g %in% c("POLYGON", "MULTIPOLYGON"))) return("polygon")
+  if (any(g %in% c("LINESTRING", "MULTILINESTRING"))) return("line")
+  if (any(g %in% c("POINT", "MULTIPOINT"))) return("point")
+  
+  return(NA)
+}
+
+create_legend_png <- function(path, visible_layers, display1, display1_name, display2, display2_name, display3, display3_name, rast1_name, rast2_name) {
   legend_report <- data.frame(
     group = c(
       "Annual range (YG)",
@@ -561,6 +618,39 @@ create_legend_png <- function(path, visible_layers) {
   
   legend_report <- legend_report %>%
     dplyr::filter(group %in% visible_layers)
+  
+  extra_rows <- list()
+  
+  if (!is.null(display1) && display1_name %in% visible_layers) {
+    extra_rows[[length(extra_rows) + 1]] <- data.frame(
+      group = "display1",
+      label = display1_name,
+      color = "#EE6363",
+      type = get_geom_type(display1)
+    )
+  }
+  
+  if (!is.null(display2) && display2_name %in% visible_layers) {
+    extra_rows[[length(extra_rows) + 1]] <- data.frame(
+      group = "display2",
+      label = display2_name,
+      color = "#33006689",
+      type = get_geom_type(display2)
+    )
+  }
+  
+  if (!is.null(display3) && display3_name %in% visible_layers) {
+    extra_rows[[length(extra_rows) + 1]] <- data.frame(
+      group = "display3",
+      label = display3_name,
+      color = "#003333",
+      type = get_geom_type(display3)
+    )
+  }
+  
+  extra_rows <- do.call(rbind, extra_rows)
+  legend_report <- rbind(legend_report, extra_rows)
+  
   n <- nrow(legend_report)
   
   png(path, width = 600, height = 800, res = 120)
@@ -580,7 +670,7 @@ create_legend_png <- function(path, visible_layers) {
     } else if (legend_report$type[i] == "line") {
       segments(0.05, y, 0.2, y, col = legend_report$color[i], lwd = 3)
     }else{
-      points(0.125, y, pch = 21,  bg = legend_report$color[i], col = "black", cex = 1.5)
+      points(0.125, y, pch = 21,  bg = legend_report$color[i], col = "black", cex = 3)
     }
     
     # Draw text (bigger font OK)

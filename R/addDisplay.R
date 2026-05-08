@@ -222,11 +222,11 @@ addDisplayServer <- function(input, output, session, project, map, rv){
       display1 <- st_transform(display1_sf(), 4326)
       geom_type <- unique(sf::st_geometry_type(display1))
       if (any(geom_type %in% c("POLYGON", "MULTIPOLYGON"))) {
-        map <- map %>% addPolygons(data=display1,  fillColor='#663300', stroke=F, fill = T, fillOpacity = 0.5, group=rv$display1_name(), options = leafletOptions(pane = "ground"))
+        map <- map %>% addPolygons(data=display1,  fillColor='#EE6363', stroke=F, fill = T, fillOpacity = 0.8, group=rv$display1_name(), options = leafletOptions(pane = "ground"))
       } else if (any(geom_type %in% c("LINESTRING", "MULTILINESTRING"))) {
-        map <- map %>% addPolylines(data = display1, color = '#663300', weight = 2, group = rv$display1_name(), options = leafletOptions(pane = "ground"))
+        map <- map %>% addPolylines(data = display1, color = '#EE6363', weight = 2, group = rv$display1_name(), options = leafletOptions(pane = "ground"))
       } else if (any(geom_type %in% c("POINT", "MULTIPOINT"))) {
-        map <- map %>% addCircleMarkers(data = display1, color = '#663300', radius = 5, fillOpacity = 0.7, group = rv$display1_name(), options = leafletOptions(pane = "ground"))
+        map <- map %>% addCircleMarkers(data = display1, color = '#EE6363', radius = 5, fillOpacity = 1, group = rv$display1_name(), options = leafletOptions(pane = "ground"))
       } else {
         showNotification("Unsupported geometry type", type = "error")
       }
@@ -238,7 +238,7 @@ addDisplayServer <- function(input, output, session, project, map, rv){
       display2 <- st_transform(display2_sf(), 4326)
       geom_type <- unique(sf::st_geometry_type(display2))
       if (any(geom_type %in% c("POLYGON", "MULTIPOLYGON"))) {
-        map <- map %>% addPolygons(data=display2,  fillColor='#330066', stroke=F, fill = T, fillOpacity = 0.5, group=rv$display2_name(), options = leafletOptions(pane = "ground"))
+        map <- map %>% addPolygons(data=display2,  fillColor='#330066', stroke=F, fill = T, fillOpacity = 0.7, group=rv$display2_name(), options = leafletOptions(pane = "ground"))
       } else if (any(geom_type %in% c("LINESTRING", "MULTILINESTRING"))) {
         map <- map %>% addPolylines(data = display2, color = '#330066', weight = 2, group = rv$display2_name(), options = leafletOptions(pane = "ground"))
       } else if (any(geom_type %in% c("POINT", "MULTIPOINT"))) {
@@ -253,7 +253,7 @@ addDisplayServer <- function(input, output, session, project, map, rv){
       display3 <- st_transform(display3_sf(), 4326)
       geom_type <- unique(sf::st_geometry_type(display3))
       if (any(geom_type %in% c("POLYGON", "MULTIPOLYGON"))) {
-        map <- map %>% addPolygons(data=display3,  fillColor='#003333', stroke=F, fill = T, fillOpacity = 0.5, group=rv$display3_name(), options = leafletOptions(pane = "ground"))
+        map <- map %>% addPolygons(data=display3,  fillColor='#003333', stroke=F, fill = T, fillOpacity = 0.7, group=rv$display3_name(), options = leafletOptions(pane = "ground"))
       } else if (any(geom_type %in% c("LINESTRING", "MULTILINESTRING"))) {
         map <- map %>% addPolylines(data = display3, color = '#003333', weight = 2, group = rv$display3_name(), options = leafletOptions(pane = "ground"))
       } else if (any(geom_type %in% c("POINT", "MULTIPOINT"))) {

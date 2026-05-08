@@ -460,7 +460,18 @@ genIntactServer <- function(input, output, session, project, map, rv){
     tmap::tmap_save(final_map, map_file, dpi = 300)
     
     legend_file <- normalizePath(file.path("www", "legend_report.png"))
-    create_legend_png(legend_file, rv$visible_groups())
+    create_legend_png(
+      legend_file,
+      rv$visible_groups(),
+      rv$display1_sf(),
+      rv$display1_name(),
+      rv$display2_sf(),
+      rv$display2_name(),
+      rv$display3_sf(),
+      rv$display3_name(),
+      rv$rast1_name(),
+      rv$rast2_name()
+    )
     
     rv$map_path(map_file)
     rv$legend_path(legend_file)
