@@ -50,9 +50,22 @@ by the app and cannot be modified.
 
   - Optional: Include fires and specify a minimum size threshold and the years to include.
 
- 
-#### Download undisturbed and disturbed areas
-    
+<br>
+
+#### Generate and download a report summarizing the analysis
+
+Once the undisturbed and disturbed areas map has been generated and displayed, users may create a summary report directly from the app. Before generating the report, 
+users can customize the map snapshot by selecting which layers and display elements should appear in the figure.
+
+To generate a report, click the "Generate the report using this map" button. This action opens the Reporting tab, where the report can be previewed prior to download.
+
+The report summarizes the selected analysis settings and outputs, including disturbance statistics, map figures, selected buffer settings, and associated parameters 
+used to generate the undisturbed and disturbed areas.
+
+<br>
+
+#### Download undisturbed and disturbed areas as GeoPackage
+
   - Download a GeoPackage of the **undisturbed areas** and **disturbed areas** created by the app, as well as the input spatial layers (e.g., linear and areal disturbances).
   
 ### Caribou Cumulative Effects Explorer workflow diagram
