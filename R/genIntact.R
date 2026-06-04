@@ -167,14 +167,14 @@ genIntactServer <- function(input, output, session, project, map, rv){
         v4 <- NULL
       }
       
-      if(input$forceclaims & ('Quartz_Claims' %in% rv$lyr() | 'Placer_Claims' %in% rv$lyr() | 'Mining_Claims' %in% rv$lyr())) {
-        if ('Quartz_Claims' %in% rv$lyr() & !'Placer_Claims' %in% rv$lyr()) {
+      if(input$forceclaims & ('quartz_claims' %in% rv$lyr() | 'placer_claims' %in% rv$lyr() | 'mining_claims' %in% rv$lyr())) {
+        if ('quartz_claims' %in% rv$lyr() & !'placer_claims' %in% rv$lyr()) {
           v5 <- st_union(st_buffer(rv$layers_rv$quartz, input$minesize)) %>% 
             st_sf()
-        } else if ('Placer_Claims' %in% rv$lyr() & !'Quartz_Claims' %in% rv$lyr()) {
+        } else if ('placer_claims' %in% rv$lyr() & !'quartz_claims' %in% rv$lyr()) {
           v5 <- st_union(st_buffer(rv$layers_rv$placers, input$minesize)) %>% 
             st_sf()
-        } else if ('Mining_Claims' %in% rv$lyr()) {
+        } else if ('mining_claims' %in% rv$lyr()) {
           v5 <- st_union(st_buffer(rv$layers_rv$mines, input$minesize)) %>% 
             st_sf()
         } else {
@@ -196,6 +196,7 @@ genIntactServer <- function(input, output, session, project, map, rv){
       } else {
         v <- NULL
       }
+      rv$footprint_sf(v)
       return(v)
     }
   })
@@ -314,7 +315,7 @@ genIntactServer <- function(input, output, session, project, map, rv){
     if (isMappable(intact_sf)) { 
       map <- map %>% addPolygons(data=intact_sf, color='#336633', stroke=F, fillOpacity=0.5, group='Undisturbed areas', options = leafletOptions(pane = "top")) %>%
         addLayersControl(position = "topright",
-                         baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
+                         baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                          overlayGroups = c(rv$group_names(), rv$rge_selected(), "Annual range (YG)", rv$range_names(), "Undisturbed areas", rv$dist_names(), rv$add_names()),
                          options = layersControlOptions(collapsed = FALSE)) %>%
         showGroup("Undisturbed areas") %>%
@@ -323,7 +324,7 @@ genIntactServer <- function(input, output, session, project, map, rv){
     if (isMappable(fp_sf)) { 
       map <- map %>% addPolygons(data=fp_sf, color='black', stroke=F, fillOpacity=0.5, group=rv$footprint_names_new(), options = leafletOptions(pane = "top")) %>%
         addLayersControl(position = "topright",
-                         baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
+                         baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                          overlayGroups = c(rv$group_names(), rv$rge_selected(), "Annual range (YG)", rv$range_names(), "Undisturbed areas",  rv$footprint_names_new(), rv$dist_names(), rv$add_names()),
                          options = layersControlOptions(collapsed = FALSE)) %>%
         hideGroup(c(rv$footprint_names_new(), rv$group_names(), rv$range_names(), rv$add_names()))

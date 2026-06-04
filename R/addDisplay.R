@@ -290,7 +290,7 @@ addDisplayServer <- function(input, output, session, project, map, rv){
     
     leafletProxy("map") %>%
       addLayersControl(position = "topright",
-                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
+                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c(rv$group_names(), rv$rge_selected(), "Annual range (YG)", rv$range_names(), rv$dist_names(), add_names_new),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       hideGroup(c(rv$group_names(), rv$range_names(), add_names_new))

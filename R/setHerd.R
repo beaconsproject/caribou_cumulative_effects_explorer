@@ -144,7 +144,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
   # Observe on linear disturbances - disable if missing
   observe({
     req(rv$herd())
-    if (!("linear_disturbance") %in% rv$lyr()){
+    if (!("linear_disturbances") %in% rv$lyr()){
       disable("buffer1")
     }else{
       enable("buffer1")
@@ -155,7 +155,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
   # Observe on areal disturbances - disable if missing
   observe({
     req(rv$herd())
-    if (!("areal_disturbance") %in% rv$lyr()){
+    if (!("areal_disturbances") %in% rv$lyr()){
       disable("buffer2")
     }else{
       enable("buffer2")
@@ -165,7 +165,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
   # Observe on linear and areal for custom buffering - disable if both missing
   observe({
     req(rv$herd())
-    if (!any(c("linear_disturbance", "areal_disturbance") %in% rv$lyr())){
+    if (!any(c("linear_disturbances", "areal_disturbances") %in% rv$lyr())){
       disable("selectBuffer")
     }else{
       enable("selectBuffer")
@@ -415,8 +415,8 @@ setHerdServer <- function(input, output, session, project, map, rv){
     shinyjs::hide("save_stats")
     shinyjs::hide("capture_map")
     
-    if ("linear_disturbance" %in% rv$lyr()) {
-      line_sf <- st_read(rv$herd(), "linear_disturbance", quiet = TRUE)
+    if ("linear_disturbances" %in% rv$lyr()) {
+      line_sf <- st_read(rv$herd(), "linear_disturbances", quiet = TRUE)
       rv$layers_rv$line <- line_sf
       rv$industry_line("TYPE_INDUSTRY")
       rv$disttype_line("TYPE_DISTURBANCE")
@@ -478,8 +478,8 @@ setHerdServer <- function(input, output, session, project, map, rv){
       rv$matrix_line(mline)
     }
     
-    if ("areal_disturbance" %in% rv$lyr()) {
-      poly_sf <- st_read(rv$herd(), "areal_disturbance", quiet = TRUE)
+    if ("areal_disturbances" %in% rv$lyr()) {
+      poly_sf <- st_read(rv$herd(), "areal_disturbances", quiet = TRUE)
       rv$layers_rv$poly <- poly_sf
       rv$industry_poly("TYPE_INDUSTRY")
       rv$disttype_poly("TYPE_DISTURBANCE")
@@ -559,8 +559,8 @@ setHerdServer <- function(input, output, session, project, map, rv){
         rv$statslayers_rv$fires <- NULL
       }
     }
-    if ("Intact_FL_2000" %in% rv$lyr()) {
-      la <-st_read(rv$herd(), 'Intact_FL_2000', quiet=T)
+    if ("intact_fl_2000" %in% rv$lyr()) {
+      la <-st_read(rv$herd(), 'intact_fl_2000', quiet=T)
       rv$layers_rv$ifl2000 <- la
       li <- la %>%
         st_intersection(rv$sa())
@@ -570,8 +570,8 @@ setHerdServer <- function(input, output, session, project, map, rv){
         rv$statslayers_rv$ifl2000 <- NULL
       }
     }
-    if ("Intact_FL_2020" %in% rv$lyr()) {
-      la <-st_read(rv$herd(), 'Intact_FL_2020', quiet=T)
+    if ("intact_fl_2020" %in% rv$lyr()) {
+      la <-st_read(rv$herd(), 'intact_fl_2020', quiet=T)
       rv$layers_rv$ifl2020 <- la
       li <- la %>%
         st_intersection(rv$sa())
@@ -592,8 +592,8 @@ setHerdServer <- function(input, output, session, project, map, rv){
         rv$statslayers_rv$pa2021 <- NULL
       }
     }
-    if ("Placer_Claims" %in% rv$lyr()) {
-      la <-st_read(rv$herd(), 'Placer_Claims', quiet=T)
+    if ("placer_claims" %in% rv$lyr()) {
+      la <-st_read(rv$herd(), 'placer_claims', quiet=T)
       rv$layers_rv$placers <- la
       li <- la %>%
         st_intersection(rv$sa())
@@ -603,8 +603,8 @@ setHerdServer <- function(input, output, session, project, map, rv){
         rv$statslayers_rv$placers <- NULL
       }
     }
-    if ("Quartz_Claims" %in% rv$lyr()) {
-      la <-st_read(rv$herd(), 'Quartz_Claims', quiet=T)
+    if ("quartz_claims" %in% rv$lyr()) {
+      la <-st_read(rv$herd(), 'quartz_claims', quiet=T)
       rv$layers_rv$quartz <- la
       li <- la %>%
         st_intersection(rv$sa())
@@ -614,8 +614,8 @@ setHerdServer <- function(input, output, session, project, map, rv){
         rv$statslayers_rv$quartz <- NULL
       }
     }
-    if ("Mining_Claims" %in% rv$lyr()) {
-      la <-st_read(rv$herd(), 'Mining_Claims', quiet=T)
+    if ("mining_claims" %in% rv$lyr()) {
+      la <-st_read(rv$herd(), 'mining_claims', quiet=T)
       rv$layers_rv$mines <- la
       li <- la %>%
         st_intersection(rv$sa())
@@ -625,8 +625,8 @@ setHerdServer <- function(input, output, session, project, map, rv){
         rv$statslayers_rv$mines <- NULL
       }
     }
-    if ("Caribou_Herds" %in% rv$lyr()) {
-      la <-st_read(rv$herd(), 'Caribou_Herds', quiet = TRUE)
+    if ("caribou_herds" %in% rv$lyr()) {
+      la <-st_read(rv$herd(), 'caribou_herds', quiet = TRUE)
       rv$layers_rv$herds <- la
       rv$statslayers_rv$herds <- la
     }
@@ -879,9 +879,9 @@ setHerdServer <- function(input, output, session, project, map, rv){
       clearGroup("Protected areas") %>%
       clearGroup("Intact FL 2000") %>%
       clearGroup("Intact FL 2020") %>%
-      clearGroup("Mining Claims") %>%
-      clearGroup("Placer Claims") %>%
-      clearGroup("Quartz Claims") %>%
+      clearGroup("Mining claims") %>%
+      clearGroup("Placer claims") %>%
+      clearGroup("Quartz claims") %>%
       clearGroup("Annual range (YG)") %>%
       # Little Rancheria related
       clearGroup("Fall high use areas") %>%
@@ -946,21 +946,21 @@ setHerdServer <- function(input, output, session, project, map, rv){
     placers <- isolate(rv$layers_rv$placers)
     if(!is.null(placers)){
       placers <- st_transform(placers, 4326)
-      leafletProxy("map") %>% addPolygons(data=placers, color= '#333333', fill=T, fillColor='#333333', weight=3, fillOpacity = 1, group="Placer Claims", options = leafletOptions(pane = "ground")) 
-      dist_names_new <- c(dist_names_new, "Placer Claims")
+      leafletProxy("map") %>% addPolygons(data=placers, color= '#333333', fill=T, fillColor='#333333', weight=3, fillOpacity = 1, group="Placer claims", options = leafletOptions(pane = "ground")) 
+      dist_names_new <- c(dist_names_new, "Placer claims")
     }
     quartz <- isolate(rv$layers_rv$quartz)
     if(!is.null(quartz)){
       quartz <- st_transform(quartz, 4326)
-      leafletProxy("map") %>% addPolygons(data=quartz, color = '#999999', fill=T, fillColor='#999999', weight=1, fillOpacity = 1, group="Quartz Claims", options = leafletOptions(pane = "ground")) 
-      dist_names_new <- c(dist_names_new, "Quartz Claims")
+      leafletProxy("map") %>% addPolygons(data=quartz, color = '#999999', fill=T, fillColor='#999999', weight=1, fillOpacity = 1, group="Quartz claims", options = leafletOptions(pane = "ground")) 
+      dist_names_new <- c(dist_names_new, "Quartz claims")
     }
     
     mines <- isolate(rv$layers_rv$mines)
     if(!is.null(mines)){
       mines <- st_transform(mines, 4326)
-      leafletProxy("map") %>% addPolygons(data=mines, color='#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Mining Claims", options = leafletOptions(pane = "ground")) 
-      dist_names_new <- c(dist_names_new, "Mining Claims")
+      leafletProxy("map") %>% addPolygons(data=mines, color='#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Mining claims", options = leafletOptions(pane = "ground")) 
+      dist_names_new <- c(dist_names_new, "Mining claims")
     }       
     # Disturbance
     poly <- isolate(rv$layers_rv$poly)
@@ -1015,7 +1015,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
     
     leafletProxy("map") %>%
       addLayersControl(position = "topright",
-                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
+                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c(group_names_new, rv$rge_selected(), "Annual range (YG)", range_names_new, dist_names_new, add_names_new),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       hideGroup(c(rv$group_names(), range_names_new, add_names_new, "Critical mineral occurrences", "Priority critical mineral occurrences"))
@@ -1028,10 +1028,10 @@ setHerdServer <- function(input, output, session, project, map, rv){
     
     ################################################################################################
     # Add modal if layers are missing
-    if(!any(c('linear_disturbance', 'areal_disturbance', 'fires', 'Placer_Claims', 'Quartz_Claims', 'Mining_Claims') %in% rv$lyr())){
+    if(!any(c('linear_disturbances', 'areal_disturbances', 'fires', 'placer_claims', 'quartz_claims', 'mining_claims') %in% rv$lyr())){
       showModal(modalDialog(
         title = "No disturbance provided in the GPKG.",
-        "Please provide a GPKG that has either 'linear_disturbance', 'areal_disturbance', 'fires' or 'Mining_Claims' as a layer",
+        "Please provide a GPKG that has either 'linear_disturbances', 'areal_disturbances', 'fires' or 'mining_claims' as a layer",
         easyClose = FALSE,
         footer = modalButton("OK")
       ))
@@ -1039,7 +1039,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
     }
     
     
-    if(!any(c('linear_disturbance', 'areal_disturbance', 'Placer_Claims', 'Quartz_Claims', 'Mining_Claims') %in% rv$lyr()) &&
+    if(!any(c('linear_disturbances', 'areal_disturbances', 'placer_claims', 'quartz_claims', 'mining_claims') %in% rv$lyr()) &&
        'fires' %in% rv$lyr() &&
        is.null(rv$other_linedist()) &&
        is.null(rv$other_polydist())  
@@ -1052,7 +1052,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
       )  
     }
     
-    if(!all(c('linear_disturbance', 'areal_disturbance', 'fires') %in% rv$lyr()) & any(c('Placer_Claims', 'Quartz_Claims', 'Mining_Claims') %in% rv$lyr())){
+    if(!all(c('linear_disturbances', 'areal_disturbances', 'fires') %in% rv$lyr()) & any(c('placer_claims', 'quartz_claims', 'mining_claims') %in% rv$lyr())){
       showModal(modalDialog(
         title = "Only mining claims will be used to generate the footprint and intactness layers",
         easyClose = FALSE,
