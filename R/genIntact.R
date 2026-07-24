@@ -298,7 +298,6 @@ genIntactServer <- function(input, output, session, project, map, rv){
   # Update map with intactness/footprint
   ##############################################################################
   observeEvent(input$goButton,{
-    
     shinyjs::show("save_stats")
     shinyjs::show("capture_map")
     shinyjs::enable("downloadData")
@@ -524,10 +523,10 @@ genIntactServer <- function(input, output, session, project, map, rv){
     params <- list(
       herd = rv$herd_range(),
       stats = herdStats,
-      matrix_poly = rv$matrix_poly(),
-      matrix_line = rv$matrix_line(),
-      matrix_poly_other = rv$matrix_poly_other(),
-      matrix_line_other = rv$matrix_line_other(),
+      matrix_poly = input$areal_buffers,
+      matrix_line = input$linear_buffers,
+      matrix_poly_other = input$areal_buffers_other,
+      matrix_line_other = input$linear_buffers_other,
       map_path = rv$map_path(),
       summaryStats = rv$summaryStats(),
       legend_path = rv$legend_path(),
