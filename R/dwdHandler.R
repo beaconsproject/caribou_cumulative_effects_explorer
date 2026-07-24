@@ -101,7 +101,7 @@ downloadServer <- function(input, output, session, project, rv){
   )
   
   # Download report
-  output$download_report <- downloadHandler(
+  output$download_report_1 <- downloadHandler(
     filename = function() {
       paste0("Caribou_CE_disturbance_report_", Sys.Date(), ".pdf")
     },
@@ -120,4 +120,25 @@ downloadServer <- function(input, output, session, project, rv){
     }
   )
   
+  output$download_report <- downloadHandler(
+    filename = function() {
+      paste0(
+        "Caribou_CE_disturbance_report_",
+        Sys.Date(),
+        ".pdf"
+      )
+    },
+    contentType = "application/pdf",
+    content = function(file) {
+      
+      html_file <- file.path("www", "preview.html")
+      
+      webshot2::webshot(
+        url = html_file,
+        file = file,
+        vwidth = 1200,
+        vheight = 900
+      )
+    }
+  )
 }

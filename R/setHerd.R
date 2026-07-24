@@ -708,9 +708,20 @@ setHerdServer <- function(input, output, session, project, map, rv){
       li <- la %>%
         st_intersection(rv$sa())
       if(nrow(li)>0){
-        rv$statslayers_rv$ifl2020 <- li
+        rv$statslayers_rv$ifl2025 <- li
       }else{
-        rv$statslayers_rv$ifl2020 <- NULL
+        rv$statslayers_rv$ifl2025 <- NULL
+      }
+    }
+    if ("intact_fl_2025" %in% rv$lyr()) {
+      la <-st_read(rv$herd(), 'intact_fl_2025', quiet=T)
+      rv$layers_rv$ifl2025 <- la
+      li <- la %>%
+        st_intersection(rv$sa())
+      if(nrow(li)>0){
+        rv$statslayers_rv$ifl2025 <- li
+      }else{
+        rv$statslayers_rv$ifl2025 <- NULL
       }
     }
     if ("protected_areas" %in% rv$lyr()) {
@@ -1010,7 +1021,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
       clearGroup("Fires") %>%
       clearGroup("Protected areas") %>%
       clearGroup("Intact FL 2000") %>%
-      clearGroup("Intact FL 2020") %>%
+      clearGroup("Intact FL 2025") %>%
       clearGroup("Mining claims") %>%
       clearGroup("Placer claims") %>%
       clearGroup("Quartz claims") %>%
@@ -1181,11 +1192,11 @@ setHerdServer <- function(input, output, session, project, map, rv){
       leafletProxy("map") %>% addPolygons(data=ifl2000, fill=T, stroke=F, fillColor='#3366FF', fillOpacity=0.5, group="Intact FL 2000", options = leafletOptions(pane = "ground")) 
       add_names_new <- c(add_names_new, "Intact FL 2000")
     }
-    ifl2020 <- isolate(rv$layers_rv$ifl2020)
-    if(!is.null(ifl2020)){
-      ifl2020 <- st_transform(ifl2020, 4326)
-      leafletProxy("map") %>% addPolygons(data=ifl2020, fill=T, stroke=F, fillColor='#000066', fillOpacity=0.5, group="Intact FL 2020", options = leafletOptions(pane = "ground")) 
-      add_names_new <- c(add_names_new, "Intact FL 2020")
+    ifl2025 <- isolate(rv$layers_rv$ifl2025)
+    if(!is.null(ifl2025)){
+      ifl2025 <- st_transform(ifl2025, 4326)
+      leafletProxy("map") %>% addPolygons(data=ifl2025, fill=T, stroke=F, fillColor='#000066', fillOpacity=0.5, group="Intact FL 2025", options = leafletOptions(pane = "ground")) 
+      add_names_new <- c(add_names_new, "Intact FL 2025")
     }
     
     leafletProxy("map") %>%
@@ -1247,7 +1258,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
       ),
       tags$div(
         style = "font-size: 0.85em; color: grey;",
-        tags$em("**"), "Intact Forest Landscape 2020"
+        tags$em("**"), "Intact Forest Landscape 2025"
       )
     )
   })
@@ -1368,7 +1379,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
         "Mining claims (%)",
         "Protected areas (%)",
         "Intact FL 2000 (%)*",
-        "Intact FL 2020 (%)**"
+        "Intact FL 2025 (%)**"
       ),
       Value = c(
         if (is.null(rv$statslayers_rv$line) || nrow(rv$statslayers_rv$line) == 0) 0 else as.numeric(round(st_length(st_union(rv$statslayers_rv$line)) / 1000, 1)),
@@ -1379,7 +1390,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
         if (is.null(mines_all()) || nrow(mines_all())== 0) 0 else as.numeric(round(st_area(st_union(mines_all())) / aoi * 100, 1)),
         if (is.null(rv$statslayers_rv$pa2021) || nrow(rv$statslayers_rv$pa2021)== 0) 0 else as.numeric(round(st_area(st_union(rv$statslayers_rv$pa2021)) / aoi * 100, 1)),
         if (is.null(rv$statslayers_rv$ifl2000) || nrow(rv$statslayers_rv$ifl2000)== 0) 0 else as.numeric(round(st_area(st_union(rv$statslayers_rv$ifl2000)) / aoi * 100, 1)),
-        if (is.null(rv$statslayers_rv$ifl2020) || nrow(rv$statslayers_rv$ifl2020)== 0) 0 else as.numeric(round(st_area(st_union(rv$statslayers_rv$ifl2020)) / aoi * 100, 1))
+        if (is.null(rv$statslayers_rv$ifl2025) || nrow(rv$statslayers_rv$ifl2025)== 0) 0 else as.numeric(round(st_area(st_union(rv$statslayers_rv$ifl2025)) / aoi * 100, 1))
       )
     )
     rv$baseAttributes(tbl)

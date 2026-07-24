@@ -519,14 +519,26 @@ genIntactServer <- function(input, output, session, project, map, rv){
     rv$map_path(map_file)
     rv$legend_path(legend_file)
     
+    if(!is.null(input$linear_buffers)){
+      rv$matrix_line(input$linear_buffers)
+    }
+    if(!is.null(input$areal_buffers)){
+      rv$matrix_poly(input$areal_buffers)
+    }
+    if(!is.null(input$linear_buffers_other)){
+      rv$matrix_line_other(input$linear_buffers_other)
+    }
+    if(!is.null(input$areal_buffers_other)){
+      rv$matrix_poly_other(input$areal_buffers_other)
+    }
     # Parameters to pass to the Rmd
     params <- list(
       herd = rv$herd_range(),
       stats = herdStats,
-      matrix_poly = input$areal_buffers,
-      matrix_line = input$linear_buffers,
-      matrix_poly_other = input$areal_buffers_other,
-      matrix_line_other = input$linear_buffers_other,
+      matrix_poly = rv$matrix_poly(),
+      matrix_line = rv$matrix_line(),
+      matrix_poly_other = rv$matrix_poly_other(),
+      matrix_line_other = rv$matrix_poly_other(),
       map_path = rv$map_path(),
       summaryStats = rv$summaryStats(),
       legend_path = rv$legend_path(),
