@@ -50,6 +50,13 @@ setHerdServer <- function(input, output, session, project, map, rv){
       li <- c("Annual range (YG)", la)
       div(style = "margin-top: -30px;",  selectInput("saLayer", label = div(style = "font-size:13px;margin-top: -10px;", "Select range/corridor"), 
                                                      choices = li, selected = "Annual range (YG)"))
+    } else if (input$selectInput == "Finlayson"){
+      layer <- sf::st_layers(rv$herd())
+      
+      la <- finlaysonrge_list[finlaysonrge_list %in% layer$name]
+      li <- c("Annual range (YG)", la)
+      div(style = "margin-top: -30px;",  selectInput("saLayer", label = div(style = "font-size:13px;margin-top: -10px;", "Select range/seasonal use areas"), 
+                                                     choices = li, selected = "Annual range (YG)"))
     } else{
       div(style = "margin-top: -30px;",  selectInput("saLayer", label = div(style = "font-size:13px;margin-top: -10px;", ""), 
                                                      choices = "Annual range (YG)"))
@@ -365,7 +372,126 @@ setHerdServer <- function(input, output, session, project, map, rv){
                   cols = list(names = TRUE))
     }
   })    
+ 
+  ########################################################
+  output$linear_other_matrix_ui <- renderUI({
+    if (is.null(rv$other_linedist())) {
+      tags$p("NONE", style = "color: gray; font-style: italic;")
+    } else {
+      # Build matrix
+      industry_line <- "Type_Indus"
+      disttype_line <- "Type_Distu"
+
+      line_tibble <- rv$other_linedist() %>%
+        st_drop_geometry() %>%
+        {
+          data <- .
+          industry_col <- if (!is.null(industry_line) && industry_line %in% colnames(data)) data[[industry_line]] else "NONE"
+          dist_col <- if (!is.null(disttype_line) && disttype_line %in% colnames(data)) data[[disttype_line]] else "NONE"
+          
+          data %>%
+            mutate(
+              TYPE_FEATURE = "Linear other",
+              BUFFER_SIZE_M = input$otherlinesize,
+              TYPE_INDUSTRY = industry_col,
+              TYPE_DISTURBANCE = dist_col
+            )
+        }
+      line_summary <- if (is.null(rv$other_linedist())) {
+        tibble(
+          TYPE_INDUSTRY = "NONE",
+          TYPE_DISTURBANCE = "NONE",
+          AREA_KM2 = 0
+        )
+      } else {
+        data <- rv$other_linedist()
+        data <- data %>%
+          mutate(
+            length_km = st_length(rv$other_linedist()) / 1000,
+            TYPE_INDUSTRY = if (!is.null(industry_line) && industry_line %in% colnames(data)) data[[industry_line]] else "NONE",
+            TYPE_DISTURBANCE = if (!is.null(disttype_line) && disttype_line %in% colnames(data)) data[[disttype_line]] else "NONE"
+          ) %>%
+          st_drop_geometry() %>%
+          group_by(TYPE_INDUSTRY, TYPE_DISTURBANCE) %>%
+          summarize(LENGTH_KM = as.numeric(round(sum(length_km), 2)))
+      }
+      
+      line_tibble <- line_tibble %>%
+        left_join(line_summary, by = c("TYPE_INDUSTRY", "TYPE_DISTURBANCE"))
+      
+      mline_other <- line_tibble %>%
+        dplyr::select(any_of(c("TYPE_FEATURE", "TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M", "LENGTH_KM"))) %>%
+        distinct() %>%
+        as.matrix()
+      
+      rv$matrix_line_other(mline_other)
+      
+      # Return the matrixInput to UI
+      matrixInput("linear_buffers_other",
+                  value = rv$matrix_line_other(),
+                  rows = list(names = FALSE, extend = TRUE),
+                  cols = list(names = TRUE))
+    }
+  })  
   
+  output$areal_other_matrix_ui <- renderUI({
+    if (is.null(rv$other_polydist())) {
+      tags$p("NONE", style = "color: gray; font-style: italic;")
+    } else {
+      #req(industry_poly, disttype_poly, input$buffer2)
+      industry_poly <- "Type_Indus"
+      disttype_poly <- "Type_Distu"
+      
+      poly_tibble <- rv$other_polydist() %>%
+        st_drop_geometry() %>%
+        {
+          data <- .
+          industry_col <- if (!is.null(industry_poly) && industry_poly %in% colnames(data)) data[[industry_poly]] else "NONE"
+          dist_col <- if (!is.null(disttype_poly) && disttype_poly %in% colnames(data)) data[[disttype_poly]] else "NONE"
+          
+          data %>%
+            mutate(
+              TYPE_FEATURE = "Areal other",
+              BUFFER_SIZE_M = input$otherpolysize,
+              TYPE_INDUSTRY = industry_col,
+              TYPE_DISTURBANCE = dist_col
+            )
+        }
+      
+      poly_summary <- if (is.null(rv$other_polydist())) {
+        tibble(
+          TYPE_INDUSTRY = "NONE",
+          TYPE_DISTURBANCE = "NONE",
+          AREA_KM2 = 0
+        )
+      } else {
+        data <- rv$other_polydist()
+        data <- data %>%
+          mutate(
+            area_km2 = as.numeric(st_area(data)) / 1e6,
+            TYPE_INDUSTRY = if (!is.null(industry_poly) && industry_poly %in% colnames(data)) data[[industry_poly]] else "NONE",
+            TYPE_DISTURBANCE = if (!is.null(disttype_poly) && disttype_poly %in% colnames(data)) data[[disttype_poly]] else "NONE"
+          ) %>%
+          st_drop_geometry() %>%
+          group_by(TYPE_INDUSTRY, TYPE_DISTURBANCE) %>%
+          summarize(AREA_KM2 = round(sum(area_km2, na.rm = TRUE), 5), .groups = "drop")
+      }
+      
+      poly_tibble <- poly_tibble %>%
+        left_join(poly_summary, by = c("TYPE_INDUSTRY", "TYPE_DISTURBANCE"))
+      
+      mpoly_other <- poly_tibble %>%
+        dplyr::select(any_of(c("TYPE_FEATURE", "TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M", "AREA_KM2"))) %>%
+        distinct() %>%
+        as.matrix()
+      
+      rv$matrix_poly_other(mpoly_other)
+      matrixInput("areal_buffers_other",
+                  value = mpoly_other,
+                  rows = list(names = FALSE, extend = TRUE),
+                  cols = list(names = TRUE))
+    }
+  })   
   
   ##############################################################################
   # Read input data - REQUIRED
@@ -394,7 +520,13 @@ setHerdServer <- function(input, output, session, project, map, rv){
       } else {
         layer
       }
-    } else {
+    } else if(input$selectInput == "Finlayson"){
+      if(input$saLayer == "Annual range (YG)"){
+        layer <- st_read(rv$herd(), "studyarea", quiet = TRUE)
+      } else {
+        layer <- st_read(rv$herd(), input$saLayer, quiet = TRUE)
+      }
+    }else{
       layer <- st_read(rv$herd(), "studyarea", quiet = TRUE)
     }
     rv$sa(layer)
@@ -756,7 +888,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
   # Read input data - OTHERS
   ##############################################################################
   other_linedist <- reactive({
-    layer <- FALSE
+    layer <- NULL
     
     if(!is.null(input$upload_lineothers)){
       required_extensions <- c("shp", "shx", "dbf", "prj")
@@ -771,7 +903,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
           easyClose = FALSE,
           footer = modalButton("OK")
         ))
-        req(FALSE)
+        req(NULL)
       }else{
         # Proceed if all components are present
         dir <- unique(dirname(infile$datapath))
@@ -791,7 +923,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
             easyClose = FALSE,
            footer = modalButton("OK")
           ))
-          return(FALSE)
+          return(NULL)
         }else{
           # Handle cases where 'geometry' might not be named correctly
           if (!"geometry" %in% names(layer) && "geom" %in% names(layer)) {
@@ -809,7 +941,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
   })
   
   other_polydist <- reactive({
-    layer <- FALSE
+    layer <- NULL
     if(!is.null(input$upload_polyothers)){
       required_extensions <- c("shp", "shx", "dbf", "prj")
       infile <- input$upload_polyothers
@@ -823,7 +955,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
           easyClose = FALSE,
           footer = modalButton("OK")
         ))
-        req(FALSE)
+        req(NULL)
       } else {
         # Proceed if all components are present
         dir <- unique(dirname(infile$datapath))
@@ -843,7 +975,7 @@ setHerdServer <- function(input, output, session, project, map, rv){
             easyClose = FALSE,
             footer = modalButton("OK")
           ))
-          return(FALSE)
+          return(NULL)
         }else{
           # Handle cases where 'geometry' might not be named correctly
           if (!"geometry" %in% names(layer) && "geom" %in% names(layer)) {
@@ -892,7 +1024,18 @@ setHerdServer <- function(input, output, session, project, map, rv){
       clearGroup("Fall rut") %>%
       clearGroup("Summer") %>%
       clearGroup("Spring high use areas") %>%
-      clearGroup("Spring main corridor")
+      clearGroup("Spring main corridor") %>%
+      clearGroup("Mines") %>%
+      clearGroup("Mining explorations") %>%
+      # Finlayson related
+      clearGroup("BMC home range") %>%
+      clearGroup("BMC post calving") %>%
+      clearGroup("BMC rut") %>%
+      clearGroup("BMC winter") %>%
+      clearGroup("BMC WKAs fall") %>%
+      clearGroup("BMC WKAs winter") %>%
+      clearGroup("WKAs fall") %>%
+      clearGroup("WKAs winter")
     
     sa <- st_transform(rv$sa(), 4326)
     map_bounds1 <- sa %>% st_bbox() %>% as.character()
@@ -927,6 +1070,29 @@ setHerdServer <- function(input, output, session, project, map, rv){
       
       group_names_new <- c(rv$group_names())
       range_names_new <- c(rv$range_names(), "Fall high use areas","Fall main corridor", "Annual range", "Late winter", "Early winter", "Fall rut", "Summer", "Spring high use areas","Spring main corridor")
+    }else if(input$selectInput == "Finlayson") {
+      BMC_home_range <- st_read(rv$herd(), layer = "BMC home range") %>% st_transform(4326)
+      BMC_postcalving <- st_read(rv$herd(), layer = "BMC post calving") %>% st_transform(4326)
+      BMC_rut <- st_read(rv$herd(), layer = "BMC rut") %>% st_transform(4326)
+      BMC_winter <- st_read(rv$herd(), layer = "BMC winter") %>% st_transform(4326)
+      BMC_WKAs_fall <- st_read(rv$herd(), layer = "BMC WKAs fall") %>% st_transform(4326)
+      BMC_WKAs_winter <- st_read(rv$herd(), layer = "BMC WKAs winter") %>% st_transform(4326)
+      WKAs_fall <- st_read(rv$herd(), layer = "WKAs fall") %>% st_transform(4326)
+      WKAs_winter <- st_read(rv$herd(), layer = "WKAs winter") %>% st_transform(4326)
+      annual_range <- st_read(rv$herd(), layer = "studyarea") %>% st_transform(4326)
+      
+      leafletProxy("map") %>% addPolygons(data=annual_range, color = 'black', fill=F, opacity= 1,  weight=1, group="Annual range (YG)", options = leafletOptions(pane = "top")) 
+      leafletProxy("map") %>% addPolygons(data=BMC_home_range, fillColor = '#D8BFD8', fill=T, fillOpacity = 0.7,  weight=0, group="BMC home range", options = leafletOptions(pane = "top")) 
+      leafletProxy("map") %>% addPolygons(data=BMC_postcalving, fillColor = '#FFCC99', fill=T, fillOpacity = 0.7,  weight=0, group="BMC post calving", options = leafletOptions(pane = "top")) 
+      leafletProxy("map") %>% addPolygons(data=BMC_rut, fillColor = '#66FF66', fill=T, opacity= 1,  weight=0, group="BMC rut", options = leafletOptions(pane = "top")) 
+      leafletProxy("map") %>% addPolygons(data=BMC_winter, fillColor = '#993399', fill=T, opacity= 0.5,  weight=0, group="BMC winter", options = leafletOptions(pane = "top")) 
+      leafletProxy("map") %>% addPolygons(data=BMC_WKAs_fall, fillColor = '#FF3366', fill=T, opacity= 0.5,  weight=0, group="BMC WKAs fall", options = leafletOptions(pane = "top")) 
+      leafletProxy("map") %>% addPolygons(data=BMC_WKAs_winter, fillColor = '#669999', fill=T, opacity= 1,  weight=0, group="BMC WKAs winter", options = leafletOptions(pane = "top")) 
+      leafletProxy("map") %>% addPolygons(data=WKAs_fall, fillColor = '#CC9900', fill=T, opacity= 1,  weight=0, group="WKAs fall", options = leafletOptions(pane = "top")) 
+      leafletProxy("map") %>% addPolygons(data=WKAs_winter, fillColor = '#CC9900', fill=T, opacity= 1,  weight=0, group="WKAs winter", options = leafletOptions(pane = "top")) 
+      
+      group_names_new <- c(rv$group_names())
+      range_names_new <- c(rv$range_names(), "BMC home range", "BMC post calving","BMC rut","BMC winter","BMC WKAs fall","BMC WKAs winter","WKAs fall","WKAs winter")
     } else {
       group_names_new <- c(rv$group_names())
       range_names_new <- c(rv$range_names())
@@ -962,6 +1128,15 @@ setHerdServer <- function(input, output, session, project, map, rv){
       leafletProxy("map") %>% addPolygons(data=mines, color='#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Mining claims", options = leafletOptions(pane = "ground")) 
       dist_names_new <- c(dist_names_new, "Mining claims")
     }       
+  
+    if(input$selectInput == "Finlayson") {
+      mines <- st_read("www/mines.gpkg", layer = "mines") %>% st_transform(4326)
+      mines_explo <- st_read("www/mining_exploration.gpkg", layer = "mining_exploration") %>% st_transform(4326)
+      leafletProxy("map") %>% addPolygons(data=mines_explo, fillColor = '#6666FF', fill=T, fillOpacity= 2,  weight=0, group="Mining explorations", popup = ~label, options = leafletOptions(pane = "top")) 
+      leafletProxy("map") %>% addPolygons(data=mines, color = '#003366', fill =T, fillOpacity= 1,  weight=1, group="Mines", popup = ~label, options = leafletOptions(pane = "top")) 
+      
+      dist_names_new <- c(dist_names_new, "Mines", "Mining explorations")
+    } 
     # Disturbance
     poly <- isolate(rv$layers_rv$poly)
     if(!is.null(poly)){
@@ -1172,12 +1347,12 @@ setHerdServer <- function(input, output, session, project, map, rv){
     other_polylabel <- "Other areal disturbances (km2)"
     
     # If the user uploaded a shapefile via `other_dist()`
-    if (!isFALSE(rv$other_linedist())) {
+    if (!is.null(rv$other_linedist())) {
       other_linedist <- rv$other_linedist() %>% st_union()
       other_linevalue <- round(st_length(other_linedist) / 1000, 1)
       other_linelabel <- "Other linear disturbances (km)"
     }
-    if (!isFALSE(rv$other_polydist())) {
+    if (!is.null(rv$other_polydist())) {
       other_polydist <- rv$other_polydist() %>% st_union()
       other_polyvalue <- round(st_area(other_polydist) / 1e6, 1)
       other_polylabel <- "Other areal disturbances (km2)"

@@ -8,7 +8,9 @@ downloadServer <- function(input, output, session, project, rv){
     content = function(file) {
       line <- as_tibble(input$linear_buffers)
       poly <- as_tibble(input$areal_buffers)
-      matrix <- dplyr::bind_rows(line, poly)
+      line_other <- as_tibble(input$linear_buffers_other)
+      poly_other <- as_tibble(input$areal_buffers_other)
+      matrix <- dplyr::bind_rows(line, poly, line_other, poly_other)
       
       write.csv(matrix, file, row.names = FALSE)
     }
@@ -23,6 +25,19 @@ downloadServer <- function(input, output, session, project, rv){
       
       write.csv(rv$summaryStats(), file, row.names = FALSE)
     }
+  )
+  
+  output$downloadothers <- downloadHandler(
+    filename = function() { "Mines_and_mining_explorations.zip" },
+    content = function(file) {
+      
+      file.copy(
+        from = "www/Mines_and_mining_explorations.zip",
+        to = file,
+        overwrite = TRUE
+      )
+    },
+    contentType = "application/zip"
   )
   
   ##############################################################################

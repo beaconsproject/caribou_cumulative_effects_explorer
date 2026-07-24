@@ -9,6 +9,8 @@ params:
   stats: NULL
   matrix_line: NULL
   matrix_poly: NULL
+  matrix_line_other: NULL
+  matrix_poly_other: NULL
   summaryStats: NULL
   map_path: NULL
   legend_path: NULL
@@ -192,8 +194,8 @@ exclude_linear <- (!is.na(other_areal) && !includeOthers)
 excluded_components <- c(
   if (exclude_mines) "mining claims",
   if (exclude_fires) "fires",
-  if (exclude_areal) "areal disturbances",
-  if (exclude_linear) "linear disturbances"
+  if (exclude_areal) "other areal disturbances",
+  if (exclude_linear) "other linear disturbances"
 )
 
 exclude_sentence <- if (length(excluded_components) > 0) {
@@ -332,7 +334,34 @@ knitr::kable(params$matrix_line, row.names = FALSE, format = "html", table.attr 
   kableExtra::row_spec(1:nrow(params$matrix_line), extra_css = "padding-top: 2px; padding-bottom: 2px;")
 ```
 <div style="margin-bottom:30px;">
+#### Other areal disturbances
+```{r, echo=FALSE}
+if(!is.null(params$matrix_poly_other)){
+  knitr::kable(params$matrix_poly_other, row.names = FALSE, format = "html", table.attr = "style='width:100%;'") %>%
+    kableExtra::kable_styling(font_size = 13) %>%
+  kableExtra::row_spec(0, extra_css = "line-height: 1;") %>%
+  kableExtra::row_spec(1:nrow(params$matrix_poly_other), extra_css = "padding-top: 2px; padding-bottom: 2px;")
+}else{
+  cat("No other areal disturbances were included in the analysis")
+}
 
+```
+<p style="margin:20px 0;"></p>
+<div style="margin-bottom:30px;">
+#### Other linear disturbances
+```{r, echo=FALSE}
+if(!is.null(params$matrix_line_other)){
+  knitr::kable(params$matrix_line_other, row.names = FALSE, format = "html", table.attr = "style='width:100%;'") %>%
+    kableExtra::kable_styling(font_size = 13) %>%
+  kableExtra::row_spec(0, extra_css = "line-height: 1;") %>%
+  kableExtra::row_spec(1:nrow(params$matrix_line_other), extra_css = "padding-top: 2px; padding-bottom: 2px;")
+}else{
+    cat("No other linear disturbances were included in the analysis")
+
+}
+
+```
+<div style="margin-bottom:30px;">
 ```{r, echo=FALSE, results='asis'}
 sumStats <- params$summaryStats
 

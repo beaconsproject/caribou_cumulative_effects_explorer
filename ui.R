@@ -81,6 +81,7 @@ ui = dashboardPage(skin="black",
                        actionButton("confClassify", "Submit & Continue", class = "btn-warning", style='color: #000'),
                        hr(),
                        div(style = "margin-left: 10px; margin-top: 30px;", h5(strong("OPTIONAL - Upload other disturbances"))),
+                       div(style="position:relative; left:calc(6%);", downloadButton("downloadothers", "Download mines and exploration mining shp", style='color: #000')),
                        fileInput(inputId = "upload_lineothers", label = div(style = "font-size:12px","Linear disturbances (shp):"), multiple = TRUE, accept = c(".shp", ".shx", ".dbf", ".prj", ".cpg")),
                        div(style = "margin-top: -30px;", fileInput(inputId = "upload_polyothers", label = div(style = "font-size:12px","Areal disturbances (shp):"), multiple = TRUE, accept = c(".shp", ".shx", ".dbf", ".prj", ".cpg"))),
                        actionButton("confUpload", "Confirm upload", class = "btn-warning", style='color: #000'),
@@ -140,9 +141,16 @@ ui = dashboardPage(skin="black",
                        checkboxInput("includeOthers", "Include other disturbances", value=FALSE),
                        conditionalPanel(
                          condition="input.includeOthers",
-                         sliderInput("otherlinesize", label="Set buffer size (m) on other linear disturbances:", min=0, max=2000, value = 500, step=50, ticks=FALSE),
-                         sliderInput("otherpolysize", label="Set a buffer size (m)on other areal disturbances:", min=0, max=2000, value = 500, step=50, ticks=FALSE)
-                         
+                         div(style = "margin-right:10px;", radioButtons("selectBuffer_others", "Select buffer type for other disturbances:",
+                                      choices = list("Use custom buffers" = "custom_buffers", 
+                                                     "Use overall buffers" = "slider_buffers"),
+                                      selected = "slider_buffers", 
+                                      inline = FALSE)
+                       )),
+                       conditionalPanel(
+                         condition="input.includeOthers && input.selectBuffer_others == 'slider_buffers'",
+                         div(style = "margin-right:10px;", sliderInput("otherlinesize", label="Set buffer size (m) on other linear disturbances:", min=0, max=2000, value = 500, step=50, ticks=FALSE)),
+                             div(style = "margin-right:10px;", sliderInput("otherpolysize", label="Set a buffer size (m)on other areal disturbances:", min=0, max=2000, value = 500, step=50, ticks=FALSE))
                        ),
                        checkboxInput("forceclaims", "Include mining claims", value=FALSE),
                        conditionalPanel(
@@ -198,6 +206,10 @@ ui = dashboardPage(skin="black",
                                                  uiOutput("linear_matrix_ui"),
                                                  tags$h4("Define areal buffer sizes:"),
                                                  uiOutput("areal_matrix_ui"),
+                                                 tags$h4("Define linear buffer sizes for other disturbances:"),
+                                                 uiOutput("linear_other_matrix_ui"),
+                                                 tags$h4("Define areal buffer sizes for other disturbances:"),
+                                                 uiOutput("areal_other_matrix_ui"),
                                                  div(style="margin-right:10px;", downloadButton("downloadMatrix", "Download tables as csv", style='color: #000'))
                                         ),
                                         tabPanel("Summary statistics",

@@ -61,6 +61,8 @@ caribou_list <- c("Little Rancheria", "Coal River", "Finlayson", "Horseranch", "
 
 rge_list <- c("Fall high use areas", "Fall main corridor", "Annual range","Early winter","Late winter", "Fall rut", "Summer", "Spring high use areas", "Spring main corridor")
 
+finlaysonrge_list <- c("BMC home range", "BMC post calving", "BMC rut", "BMC winter", "BMC WKAs fall", "BMC WKAs winter", "WKAs fall", "WKAs winter")
+
 # LFN bnd
 IPCA_PL <- st_read("www/lfn_boundaries.gpkg", layer = "ipca_planning_area") %>% 
   st_zm(drop = TRUE, what = "ZM") %>% 
@@ -213,7 +215,17 @@ build_map <- function(rv){
     }
       
   }
-  
+  if(rv$herd() == "www/finlayson.gpkg"){
+    if(rv$herd_range() != "Annual range (YG)"){
+      if("Annual range (YG)" %in% visible){
+        poly <- st_read(rv$herd(), layer = "studyarea") %>% st_transform(4326)
+        map <- map +
+          tm_shape(poly) +
+          tm_borders(col = "black", lwd = 1)
+      }
+    }
+    
+  }
   # Protected areas
   if ("Protected areas" %in% visible) {
     poly <- rv$statslayers_rv$pa2021

@@ -10,6 +10,16 @@ genIntactServer <- function(input, output, session, project, map, rv){
       updateTabsetPanel(getDefaultReactiveDomain(), "one", selected = "Mapview")
     }
   })
+
+  # Observe on buffer 
+  observe({
+    req(input$selectBuffer_others)
+    if (input$selectBuffer_others=='custom_buffers') {
+      updateTabsetPanel(getDefaultReactiveDomain(), "one", selected = "Custom buffers")
+    } else {
+      updateTabsetPanel(getDefaultReactiveDomain(), "one", selected = "Mapview")
+    }
+  })
   
   # Observe on tabset when generating footprint
   observeEvent(input$goButton,{
@@ -154,13 +164,46 @@ genIntactServer <- function(input, output, session, project, map, rv){
       
       if(input$includeOthers) {
         if(!is.null(rv$other_linedist())){
-          v3 <- st_union(st_buffer(rv$other_linedist(), input$otherlinesize)) %>% 
-            st_sf()
+          if (input$selectBuffer_others== "custom_buffers") {
+            industry_line <- "Type_Indus"
+            disttype_line <- "Type_Distu"
+            
+            m3sub <- as_tibble(input$linear_buffers_other) %>% dplyr::select(any_of(c("TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M"))) %>%      
+            mutate(BUFFER_SIZE_M=as.integer(BUFFER_SIZE_M))
+            line <- rv$other_linedist() %>%
+              mutate(
+                TYPE_INDUSTRY = if (!is.null(industry_line) && industry_line %in% colnames(.)) .[[industry_line]] else "NONE",
+                TYPE_DISTURBANCE = if (!is.null(disttype_line) && disttype_line %in% colnames(.)) .[[disttype_line]] else "NONE"
+              ) %>%
+              left_join(m3sub, by = c("TYPE_INDUSTRY", "TYPE_DISTURBANCE")) %>% 
+              filter(!is.na(BUFFER_SIZE_M))
+              v3 <- st_union(st_buffer(line, line$BUFFER_SIZE_M))
+          } else {
+            v3 <- st_union(st_buffer(rv$other_linedist(), input$otherlinesize)) %>% 
+              st_sf()
+          }
         }else { v3 <- NULL}
         
         if(!is.null(rv$other_polydist())){
-          v4 <- st_union(st_buffer(rv$other_polydist(), input$otherpolysize)) %>% 
-            st_sf()
+          if (input$selectBuffer_others== "custom_buffers") {
+            
+            industry_poly <- "Type_Indus"
+            disttype_poly <- "Type_Distu"
+            
+            m4sub <- as_tibble(input$areal_buffers_other) %>% dplyr::select(any_of(c("TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M"))) %>%      
+              mutate(BUFFER_SIZE_M=as.integer(BUFFER_SIZE_M))
+            poly <- rv$other_polydist() %>%
+              mutate(
+                TYPE_INDUSTRY = if (!is.null(industry_poly) && industry_poly %in% colnames(.)) .[[industry_poly]] else "NONE",
+                TYPE_DISTURBANCE = if (!is.null(disttype_poly) && disttype_poly %in% colnames(.)) .[[disttype_poly]] else "NONE"
+              ) %>%
+              left_join(m4sub, by = c("TYPE_INDUSTRY", "TYPE_DISTURBANCE")) %>% 
+              filter(!is.na(BUFFER_SIZE_M))
+            v4 <- st_union(st_buffer(poly, poly$BUFFER_SIZE_M))
+          } else {
+            v4 <- st_union(st_buffer(rv$other_linedist(), input$otherlinesize)) %>% 
+              st_sf()
+          }
         } else { v4 <- NULL}
       } else { 
         v3 <- NULL
@@ -483,6 +526,8 @@ genIntactServer <- function(input, output, session, project, map, rv){
       stats = herdStats,
       matrix_poly = rv$matrix_poly(),
       matrix_line = rv$matrix_line(),
+      matrix_poly_other = rv$matrix_poly_other(),
+      matrix_line_other = rv$matrix_line_other(),
       map_path = rv$map_path(),
       summaryStats = rv$summaryStats(),
       legend_path = rv$legend_path(),
