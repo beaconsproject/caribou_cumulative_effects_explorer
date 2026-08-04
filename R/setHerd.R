@@ -702,17 +702,6 @@ setHerdServer <- function(input, output, session, project, map, rv){
         rv$statslayers_rv$ifl2000 <- NULL
       }
     }
-    if ("intact_fl_2020" %in% rv$lyr()) {
-      la <-st_read(rv$herd(), 'intact_fl_2020', quiet=T)
-      rv$layers_rv$ifl2020 <- la
-      li <- la %>%
-        st_intersection(rv$sa())
-      if(nrow(li)>0){
-        rv$statslayers_rv$ifl2025 <- li
-      }else{
-        rv$statslayers_rv$ifl2025 <- NULL
-      }
-    }
     if ("intact_fl_2025" %in% rv$lyr()) {
       la <-st_read(rv$herd(), 'intact_fl_2025', quiet=T)
       rv$layers_rv$ifl2025 <- la

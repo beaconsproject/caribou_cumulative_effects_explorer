@@ -35,7 +35,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - protected_areas
     - quartz_claims
@@ -47,7 +47,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - placer_claims
     - quartz_claims
@@ -59,7 +59,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - placer_claims
     - protected_areas
@@ -72,7 +72,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - protected_areas
     - quartz_claims
@@ -84,7 +84,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - protected_areas
     - studyarea
@@ -100,7 +100,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - Late winter
     - linear_disturbances
     - placer_claims
@@ -117,7 +117,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - placer_claims
     - quartz_claims
@@ -129,7 +129,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - placer_claims
     - protected_areas
@@ -142,7 +142,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - placer_claims
     - protected_areas
@@ -155,7 +155,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - studyarea
 
@@ -165,7 +165,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - placer_claims
     - quartz_claims
@@ -177,7 +177,7 @@ inputs:
     - fires
     - footprint_500m
     - intact_fl_2000
-    - intact_fl_2020
+    - intact_fl_2025
     - linear_disturbances
     - placer_claims
     - quartz_claims
