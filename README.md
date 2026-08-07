@@ -1,22 +1,23 @@
 ## Welcome to the Caribou Cumulative Effects Disturbance Explorer 
-*** To be reviewed ***
-Match 31, 2026
+*** Reviewed Aug 7, 2026 by ME ***
 
-The **Caribou Cumulative Effects Disturbance Explorer** is an R shiny app that enables users to evaluate disturbance cumulative effect in caribou ranges and corridors overlapping the LFN IPCA planning area. The app allow to generate human footprint or landscape intactness maps using regional-scale anthropogenic surface disturbance data at the caribou range/corridor. The app includes data for 10 caribou herds:
+The **Caribou Cumulative Effects Disturbance Explorer** is an R shiny app that enables users to evaluate cumulative effects from disturbance in caribou ranges and movement corridors overlapping the LFN IPCA planning area. The app allows users to generate human footprint or landscape intactness maps using regional-scale anthropogenic surface disturbance data for caribou ranges or movement corridors. The app includes data for 12 caribou herds:
 
+- Little Rancheria
 - Coal River
 - Finlayson
 - Horseranch
 - Labiche
-- Little Rancheria
+- Liard Plateau
 - Pelly
 - Redstone
 - South Nahanni
+- Swan Lake
 - Tay River
 - Wolf Lake
 
 For each herd, the app compiles a consistent set of spatial layers used to represent both natural and anthropogenic disturbances, as well as land use context. 
-These layers are used within the app to visualize disturbance patterns, support comparisons, and enable cumulative effects assessment. It is possible for the user to add extra linear and/or areal disturbances as well as display elements as vector and/or raster format.
+These layers are used within the app to visualize disturbance patterns, support comparisons, and enable cumulative effects assessment. It is possible for the user to add extra linear and/or areal disturbances as well as display elements in vector and/or raster format.
 
 ### Functionality
     
@@ -25,11 +26,11 @@ The app consists of four sections:
 
 #### Select caribou herd
 
-  - Select a caribou herd.Embedded spatial alyers associated to the herd will display on the map (i.e., linear and areal human disturbances, fires, mining claims, etc.).
+  - Select a caribou herd. Embedded spatial layers associated with the herd will display on the map (i.e., linear and areal human disturbances, fires, mining claims, etc.).
   
   - (OPTIONAL) Change disturbance layer classification. Embedded disturbances are classified by default using industry type and disturbance type. 
   
-  - (OPTIONAL) Upload other disturbances: Users can upload additional linear and areal disturbance features as shapeFiles. These can be incorporated into the mapping process or used for viewing purposes only.
+  - (OPTIONAL) Upload other disturbances: Users can upload additional linear and areal disturbance features as shapefiles. These can be incorporated into the mapping process or used for viewing purposes only.
     
 
 #### Add display elements (OPTIONAL)
@@ -56,9 +57,11 @@ by the app and cannot be modified.
   - Optional: Include fires and specify a minimum size threshold and the years to include.
 
 
-#### Download undisturbed and disturbed areas
+#### Download data and reporting
     
   - Download a GeoPackage of the **undisturbed areas** and **disturbed areas** created by the app, as well as the input spatial layers (e.g., linear and areal disturbances).
+  - The app can also generate **summary statistics** based on user-selected disturbance layers and buffers. The statistics table can be downloaded in .csv format.
+  - Lastly, the app can be used to generate and download a **report** on the user-defined cumulative effects assessment to further support discussions, refine analyses, or inform decisions. 
 
 ## Running the App
 
