@@ -5,16 +5,18 @@ within caribou ranges. These datasets provide the foundation for exploring how d
 landscape condition.
 
 ### Embedded datasets (included in the app)
-The application includes data for 10 caribou herds overlapping the LFN IPCA planning area:
+The application includes data for 12 caribou herds overlapping the LFN IPCA planning area:
 
+- Little Rancheria
 - Coal River
 - Finlayson
 - Horseranch
 - Labiche
-- Little Rancheria
+- Liard Plateau
 - Pelly
 - Redstone
 - South Nahanni
+- Swan Lake
 - Tay River
 - Wolf Lake
 
@@ -37,8 +39,7 @@ Each herd includes the following spatial datasets, where available or where the 
 <br><br>
 
 
-**Note:** The Little Rancheria herd additionally includes seasonal layers (summer range, winter range, fall high-use area, spring high-use area, ...)
-
+**Note:** The Little Rancheria and Finlayson herds include additional seasonal layers (summer range, winter range, rut...).
 
 
 *References: Potapov, P., Hansen, M. C., Laestadius L., Turubanova S., Yaroshenko A., Thies C., Smith W., Zhuravleva I., Komarova A., Minnemeyer S., Esipova E. The last frontiers of wilderness: Tracking loss of intact forest landscapes from 2000 to 2013. Science Advances, 2017; 3:e1600821
