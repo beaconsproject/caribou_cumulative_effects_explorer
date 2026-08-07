@@ -19,7 +19,7 @@ The app consists of four sections:
 
 #### Select caribou herd
 
-  - Select a caribou herd.Embedded spatial alyers associated to the herd will display on the map (i.e., linear and areal human disturbances, fires, mining claims, etc.).
+  - First, select a caribou herd. Embedded spatial layers associated to the herd will display on the map (i.e., linear and areal human disturbances, fires, mining claims, etc.).
   
   - (OPTIONAL) Change disturbance layer classification. Embedded disturbances are classified by default using industry type and disturbance type. 
   
