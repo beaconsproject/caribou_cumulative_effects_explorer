@@ -56,7 +56,7 @@ All remaining regions within the selected herd range that do not intersect these
 
 <br>
 
-- Press the **Generate undisturbed areas** to create the undisturbed and disturbed area maps. Once processing is complete, two new layers (disturbed areas and undisturbed areas) will appear on the map:
+- Press the **Generate undisturbed areas** button to create the undisturbed and disturbed area maps. Once processing is complete, two new layers (disturbed areas and undisturbed areas) will appear on the map:
 (1) a “disturbed” layer representing buffered disturbances, and
 (2) an “undisturbed” layer representing all areas within the study region that do not intersect disturbed areas.
 
