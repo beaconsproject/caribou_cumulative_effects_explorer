@@ -121,7 +121,7 @@ human_disturbance_sentence <- if (length(components) > 0) {
 ##################
 # base linear areal
 base_sentence <- if (params$bufferType == "custom_buffers") {
-  "To generate the disturbed areas layer, custom buffers around areal and linear featurea were applied (see table below)."
+  "To generate the disturbed areas layer, custom buffers around areal and linear features were applied (see table below)."
 } else {
   parts <- c(
     if (linear != 0)
@@ -129,7 +129,7 @@ base_sentence <- if (params$bufferType == "custom_buffers") {
     if (areal != 0)
       sprintf("%s m for areal disturbances", params$arealbuff)
   )
-  paste0("To generate the disturbed areas layer, a generic buffer of ", paste(parts, collapse = " and "), " were used.")
+  paste0("To generate the disturbed areas layer, a generic buffer of ", paste(parts, collapse = " and "), " was used.")
 }
 
 # Add uploaded and mines
