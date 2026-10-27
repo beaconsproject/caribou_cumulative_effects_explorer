@@ -129,9 +129,13 @@ server = function(input, output, session) {
   ##############################################################################
   output$map <- renderLeaflet({
     map_bounds1 <- caribouherds %>% st_bbox() %>% as.character()
-    
+    browser()
     herd_pal <- colorFactor(palette = c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928'), domain = caribouherds$HERD)
-    proposed_ipcas$ipca_name <- c("Little Rancheria", "Dene K'éh Kusān", "Ross River MOU IPCA Study Area","Toobally", "Tū Chō")
+    proposed_ipcas %>%
+      mutate(
+        geometry = st_cast(geom, "MULTIPOLYGON")
+      )
+    proposed_ipcas$ipca_name <- c("Dene K'éh Kusān", "Little Rancheria ", "Ross River MOU IPCA Study Area","Toobally", "Tū Chō")
     
     leaflet(options = leafletOptions(attributionControl=FALSE)) %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%

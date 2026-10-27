@@ -7,7 +7,7 @@ bp <- 'G:/Shared drives/Beacons data/Public/geopackage_creator/bp_datasets.gpkg'
 spp <- 'G:/Shared drives/Beacons data/Public/geopackage_creator/species.gpkg'
 projected <- 'G:/Shared drives/Beacons data/Public/geopackage_creator/projected.gpkg'
 
-layer2Update <- c("fires", "protected_areas", "intact_fl_2025")
+layer2Update <- c("human_access_where_no_data")
 layer2Delete <- c("intact_fl_2020")
 herd2update <- c("coalriver", "horseranch","labiche","liardplateau","pelly","redstone","tayriver","southnahanni", "wolflake", "swanlake","littlerancheria")
 
@@ -54,6 +54,12 @@ fp500 <- st_read(bp, 'footprint_500m') |>
   st_cast('MULTIPOLYGON')|>
   st_make_valid()
 
+human_access <- st_read(bp, 'human_access_where_no_data') |>
+  st_zm(drop = TRUE, what = "ZM")  |>
+  st_make_valid() |>
+  dplyr::select(-any_of(c("fid", "FID"))) |>
+  st_cast('MULTIPOLYGON')
+
 quartz <- st_read(projected, 'quartz_claims') |>
   st_zm(drop = TRUE, what = "ZM")  |>
   st_make_valid() |>
@@ -65,6 +71,7 @@ placers <- st_read(projected, 'placer_claims') |>
   st_make_valid() |>
   dplyr::select(-any_of(c("fid", "FID"))) |>
   st_cast('MULTIPOLYGON')
+
 
 
 # List of datasets already created above
