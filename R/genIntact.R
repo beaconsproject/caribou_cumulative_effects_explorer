@@ -555,15 +555,26 @@ genIntactServer <- function(input, output, session, project, map, rv){
       fireyear = input$fireyear
     )
                            
-    rmarkdown::render(
-      input = "report.Rmd",
-      output_format = "html_document",
-      output_file = "preview.html",
-      output_dir = "www",   
-      params = params,
-      quiet = TRUE,
-      envir = new.env(parent = globalenv())
-    )
+    ok <- tryCatch({
+      rmarkdown::render(
+        input = "report.Rmd",
+        output_format = "html_document",
+        output_file = "preview.html",
+        output_dir = "www",
+        params = params,
+        quiet = TRUE,
+        envir = new.env(parent = globalenv())
+      )
+      TRUE
+    }, error = function(e) {
+      message("Report rendering failed: ", conditionMessage(e))
+      removeModal()
+      showNotification(paste("The report could not be generated:", conditionMessage(e)),
+                       type = "error", duration = NULL)
+      FALSE
+    })
+    if (!ok) return()
+
     rv$report_ready(rv$report_ready() + 1)
     removeModal()
   })

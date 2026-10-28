@@ -106,7 +106,6 @@ downloadServer <- function(input, output, session, project, rv){
       paste0("Caribou_CE_disturbance_report_", Sys.Date(), ".pdf")
     },
     content = function(file) {
-      
       tmp_html <- tempfile(fileext = ".html")
       
       file.copy(file.path("www", "preview.html"), tmp_html, overwrite = TRUE)
