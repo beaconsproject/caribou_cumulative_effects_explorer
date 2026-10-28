@@ -174,7 +174,52 @@ ui = dashboardPage(skin="black",
                      useShinyjs(),
                     # Link to custom CSS for the orange theme
                      tags$head(tags$link(rel = "icon", type = "image/png", href = "logoblanc.png"),
-                               tags$link(rel = "stylesheet", type = "text/css", href = "green-theme.css")),
+                               tags$link(rel = "stylesheet", type = "text/css", href = "green-theme.css"),
+                               # PDF of the report is made with the browser's own print engine (no Chrome on shinyapps.io)
+                               tags$style(HTML("
+                                 #pdf_spinner { display: none; position: fixed; inset: 0; z-index: 9999;
+                                   background: rgba(255,255,255,0.7); align-items: center; justify-content: center;
+                                   flex-direction: column; font-size: 16px; }
+                                 #pdf_spinner .fa { font-size: 40px; margin-bottom: 10px; }
+                               ")),
+                               tags$script(HTML("
+                                 var reportPrintCss =
+                                   '@page { size: letter; margin: 12mm; }' +
+                                   '@media print {' +
+                                   '  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+                                   '  .main-container { max-width: none !important; }' +
+                                   '  img { max-width: 100% !important; page-break-inside: avoid; }' +
+                                   '  table, tr, img, figure { page-break-inside: avoid; break-inside: avoid; }' +
+                                   '  h1, h2, h3, h4 { page-break-after: avoid; break-after: avoid; }' +
+                                   '}';
+
+                                 function downloadReportPdf() {
+                                   var frame = document.querySelector('#report_preview iframe');
+                                   if (!frame || !frame.contentWindow) return;
+                                   var spinner = document.getElementById('pdf_spinner');
+                                   spinner.style.display = 'flex';
+
+                                   var doc = frame.contentDocument;
+                                   if (!doc.getElementById('report-print-css')) {
+                                     var style = doc.createElement('style');
+                                     style.id = 'report-print-css';
+                                     style.textContent = reportPrintCss;
+                                     doc.head.appendChild(style);
+                                   }
+                                   // The browser suggests the page title as the PDF file name
+                                   var oldTitle = doc.title;
+                                   doc.title = 'Caribou_CE_disturbance_report_' + new Date().toISOString().slice(0, 10);
+
+                                   // Let the spinner paint before the print dialog opens
+                                   setTimeout(function() {
+                                     frame.contentWindow.focus();
+                                     frame.contentWindow.print();
+                                     doc.title = oldTitle;
+                                     spinner.style.display = 'none';
+                                   }, 100);
+                                 }
+                               "))),
+                     div(id = "pdf_spinner", icon("spinner", class = "fa-spin"), "Preparing the PDF..."),
                      tabItems(
                        tabItem(tabName = "overview",
                                fluidRow(
@@ -245,7 +290,8 @@ ui = dashboardPage(skin="black",
                                         tabPanel("Reporting",
                                                  div(style = "display:flex; justify-content: space-between; align-items: center;",
                                                      h3("Preview report"),
-                                                     downloadButton("download_report", "Download report")
+                                                     actionButton("download_report", "Download report (PDF)", icon = icon("download"),
+                                                                  onclick = "downloadReportPdf();")
                                                  ),
                                                  hr(),
                                                  uiOutput("report_preview")

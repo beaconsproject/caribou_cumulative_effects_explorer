@@ -299,14 +299,14 @@ knitr::kable(stats) %>%
 
 <div style="flex:3;">
 ```{r, echo=FALSE}
-knitr::include_graphics(params$map_path)
+knitr::include_graphics(params$map_path, rel_path = FALSE)
 ```
 </div>
 
 <div style="flex:1;">
 
 ```{r, echo=FALSE, out.width='100%'}
-knitr::include_graphics(params$legend_path)
+knitr::include_graphics(params$legend_path, rel_path = FALSE)
 ```
 </div>
 </div>
