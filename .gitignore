@@ -11,7 +11,7 @@
 
 # Example code in package build process
 *-Ex.R
-/R/update_herds_data.R
+/R/preprocessing/update_herds_data.R
 
 # Output files from R CMD build
 /*.tar.gz
