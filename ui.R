@@ -142,13 +142,18 @@ ui = dashboardPage(skin="black",
                        conditionalPanel(
                          condition="input.includeOthers",
                          div(style = "margin-right:10px;", radioButtons("selectBuffer_others", "Select buffer type for other disturbances:",
-                                      choices = list("Use custom buffers" = "custom_buffers", 
-                                                     "Use overall buffers" = "slider_buffers"),
-                                      selected = "slider_buffers", 
+                                      choices = list("Use custom buffers" = "custom_buffers_others", 
+                                                     "Use overall buffers" = "slider_buffers_others"),
+                                      selected = "slider_buffers_others",
                                       inline = FALSE)
                        )),
                        conditionalPanel(
-                         condition="input.includeOthers && input.selectBuffer_others == 'slider_buffers'",
+                         condition="input.includeOthers && input.selectBuffer_others == 'custom_buffers_others'",
+                         uiOutput("otherLineClassUI"),
+                         uiOutput("otherPolyClassUI")
+                       ),
+                       conditionalPanel(
+                         condition="input.includeOthers && input.selectBuffer_others == 'slider_buffers_others'",
                          div(style = "margin-right:10px;", sliderInput("otherlinesize", label="Set buffer size (m) on other linear disturbances:", min=0, max=2000, value = 500, step=50, ticks=FALSE)),
                              div(style = "margin-right:10px;", sliderInput("otherpolysize", label="Set a buffer size (m)on other areal disturbances:", min=0, max=2000, value = 500, step=50, ticks=FALSE))
                        ),

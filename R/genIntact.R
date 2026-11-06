@@ -14,7 +14,7 @@ genIntactServer <- function(input, output, session, project, map, rv){
   # Observe on buffer 
   observe({
     req(input$selectBuffer_others)
-    if (input$selectBuffer_others=='custom_buffers') {
+    if (input$selectBuffer_others=='custom_buffers_others') {
       updateTabsetPanel(getDefaultReactiveDomain(), "one", selected = "Custom buffers")
     } else {
       updateTabsetPanel(getDefaultReactiveDomain(), "one", selected = "Mapview")
@@ -164,10 +164,10 @@ genIntactServer <- function(input, output, session, project, map, rv){
       
       if(input$includeOthers) {
         if(!is.null(rv$other_linedist())){
-          if (input$selectBuffer_others== "custom_buffers") {
-            industry_line <- "Type_Indus"
-            disttype_line <- "Type_Distu"
-            
+          if (input$selectBuffer_others== "custom_buffers_others") {
+            industry_line <- input$otherlineindustry
+            disttype_line <- input$otherlinedisttype
+
             m3sub <- as_tibble(input$linear_buffers_other) %>% dplyr::select(any_of(c("TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M"))) %>%      
             mutate(BUFFER_SIZE_M=as.integer(BUFFER_SIZE_M))
             line <- rv$other_linedist() %>%
@@ -185,10 +185,10 @@ genIntactServer <- function(input, output, session, project, map, rv){
         }else { v3 <- NULL}
         
         if(!is.null(rv$other_polydist())){
-          if (input$selectBuffer_others== "custom_buffers") {
-            
-            industry_poly <- "Type_Indus"
-            disttype_poly <- "Type_Distu"
+          if (input$selectBuffer_others== "custom_buffers_others") {
+
+            industry_poly <- input$otherpolyindustry
+            disttype_poly <- input$otherpolydisttype
             
             m4sub <- as_tibble(input$areal_buffers_other) %>% dplyr::select(any_of(c("TYPE_INDUSTRY", "TYPE_DISTURBANCE", "BUFFER_SIZE_M"))) %>%      
               mutate(BUFFER_SIZE_M=as.integer(BUFFER_SIZE_M))
@@ -201,7 +201,7 @@ genIntactServer <- function(input, output, session, project, map, rv){
               filter(!is.na(BUFFER_SIZE_M))
             v4 <- st_union(st_buffer(poly, poly$BUFFER_SIZE_M))
           } else {
-            v4 <- st_union(st_buffer(rv$other_linedist(), input$otherlinesize)) %>% 
+            v4 <- st_union(st_buffer(rv$other_polydist(), input$otherpolysize)) %>%
               st_sf()
           }
         } else { v4 <- NULL}
@@ -413,13 +413,15 @@ genIntactServer <- function(input, output, session, project, map, rv){
       
       if(is.null(rv$other_linedist()) && is.null(rv$other_polydist())){
         all_wide$set_includeOthers <- "FALSE"
-      } else if (is.null(rv$other_linedist()) && !is.null(rv$other_polydist())){
-        all_wide$set_includeOthers <- paste0("TRUE_otherline0_otherpoly", as.character(input$otherpolysize))
-      } else if (!is.null(rv$other_linedist()) && is.null(rv$other_polydist())){
-        all_wide$set_includeOthers <- paste0("TRUE_otherline", as.character(input$otherlinesize),"_otherpoly0")
-      } else{
-        all_wide$set_includeOthers <- paste0("TRUE_otherline", as.character(input$otherlinesize),"_otherpoly", as.character(input$otherpolysize))
-      } 
+      } else {
+        # 0 = layer absent, Custom = custom buffers, otherwise the overall buffer size
+        custom_others <- identical(input$selectBuffer_others, "custom_buffers_others")
+        other_setting <- function(layer, size) {
+          if (is.null(layer)) "0" else if (custom_others) "Custom" else as.character(size)
+        }
+        all_wide$set_includeOthers <- paste0("TRUE_otherline", other_setting(rv$other_linedist(), input$otherlinesize),
+                                             "_otherpoly", other_setting(rv$other_polydist(), input$otherpolysize))
+      }
     } else{
       all_wide$set_includeOthers <- "FALSE"
     }
@@ -531,14 +533,28 @@ genIntactServer <- function(input, output, session, project, map, rv){
     if(!is.null(input$areal_buffers_other)){
       rv$matrix_poly_other(input$areal_buffers_other)
     }
+    # Other (uploaded) disturbances: only report the layers that were uploaded and included
+    has_other_line <- isTRUE(input$includeOthers) && !is.null(rv$other_linedist())
+    has_other_poly <- isTRUE(input$includeOthers) && !is.null(rv$other_polydist())
+    # Columns picked to classify them (placeholders like "--industry type--" are dropped)
+    class_cols <- function(...) {
+      cols <- c(...)
+      cols[!grepl("^--", cols)]
+    }
+
     # Parameters to pass to the Rmd
     params <- list(
       herd = rv$herd_range(),
       stats = herdStats,
       matrix_poly = rv$matrix_poly(),
       matrix_line = rv$matrix_line(),
-      matrix_poly_other = rv$matrix_poly_other(),
-      matrix_line_other = rv$matrix_poly_other(),
+      matrix_poly_other = if (has_other_poly) rv$matrix_poly_other() else NULL,
+      matrix_line_other = if (has_other_line) rv$matrix_line_other() else NULL,
+      hasOtherLine = has_other_line,
+      hasOtherPoly = has_other_poly,
+      bufferTypeOthers = input$selectBuffer_others,
+      otherlineclass = class_cols(input$otherlineindustry, input$otherlinedisttype),
+      otherpolyclass = class_cols(input$otherpolyindustry, input$otherpolydisttype),
       map_path = rv$map_path(),
       summaryStats = rv$summaryStats(),
       legend_path = rv$legend_path(),

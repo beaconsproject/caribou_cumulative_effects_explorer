@@ -241,6 +241,51 @@ setHerdServer <- function(input, output, session, project, map, rv){
     )
   })
   
+  ################################################################################################
+  # Render UI for the selection of column name for other (uploaded) disturbances
+  ################################################################################################
+  # Attribute columns of an uploaded layer, with a placeholder first
+  other_class_choices <- function(layer, placeholder) {
+    c(placeholder, setdiff(colnames(layer), attr(layer, "sf_column")))
+  }
+  # Preselect the column if the layer uses the default name
+  other_class_selected <- function(layer, default, placeholder) {
+    if (default %in% colnames(layer)) default else placeholder
+  }
+
+  output$otherLineClassUI <- renderUI({
+    # Read the upload directly, so it works even before "Confirm upload" is clicked
+    layer <- other_linedist()
+    req(layer)
+    tagList(
+      div(style = "margin-left: 10px;", h5("Select other linear disturbance attributes that describe:")),
+      div(style = "margin-top: -10px;",
+          selectInput("otherlineindustry", label = NULL,
+                      choices = other_class_choices(layer, "--industry type--"),
+                      selected = other_class_selected(layer, "Type_Indus", "--industry type--"))),
+      div(style = "margin-top: -10px;",
+          selectInput("otherlinedisttype", label = NULL,
+                      choices = other_class_choices(layer, "--disturbance type--"),
+                      selected = other_class_selected(layer, "Type_Distu", "--disturbance type--")))
+    )
+  })
+
+  output$otherPolyClassUI <- renderUI({
+    layer <- other_polydist()
+    req(layer)
+    tagList(
+      div(style = "margin-left: 10px;", h5("Select other areal disturbance attributes that describe:")),
+      div(style = "margin-top: -10px;",
+          selectInput("otherpolyindustry", label = NULL,
+                      choices = other_class_choices(layer, "--industry type--"),
+                      selected = other_class_selected(layer, "Type_Indus", "--industry type--"))),
+      div(style = "margin-top: -10px;",
+          selectInput("otherpolydisttype", label = NULL,
+                      choices = other_class_choices(layer, "--disturbance type--"),
+                      selected = other_class_selected(layer, "Type_Distu", "--disturbance type--")))
+    )
+  })
+
   mines_all <- reactive({
     geoms <- list(rv$layers_rv$quartz, rv$layers_rv$placers, rv$layers_rv$mines) |>
       purrr::compact() |>                # removes NULLs
@@ -378,9 +423,9 @@ setHerdServer <- function(input, output, session, project, map, rv){
     if (is.null(rv$other_linedist())) {
       tags$p("NONE", style = "color: gray; font-style: italic;")
     } else {
-      # Build matrix
-      industry_line <- "Type_Indus"
-      disttype_line <- "Type_Distu"
+      # Build matrix from the columns selected in otherLineClassUI
+      industry_line <- input$otherlineindustry
+      disttype_line <- input$otherlinedisttype
 
       line_tibble <- rv$other_linedist() %>%
         st_drop_geometry() %>%
@@ -438,9 +483,9 @@ setHerdServer <- function(input, output, session, project, map, rv){
     if (is.null(rv$other_polydist())) {
       tags$p("NONE", style = "color: gray; font-style: italic;")
     } else {
-      #req(industry_poly, disttype_poly, input$buffer2)
-      industry_poly <- "Type_Indus"
-      disttype_poly <- "Type_Distu"
+      # Build matrix from the columns selected in otherPolyClassUI
+      industry_poly <- input$otherpolyindustry
+      disttype_poly <- input$otherpolydisttype
       
       poly_tibble <- rv$other_polydist() %>%
         st_drop_geometry() %>%
